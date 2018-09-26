@@ -53,8 +53,8 @@ CmdParser::readCmdInt(istream& istr)
                                resetBufAndPrintPrompt(); break;
          case ARROW_UP_KEY   : moveToHistory(_historyIdx - 1); break;
          case ARROW_DOWN_KEY : moveToHistory(_historyIdx + 1); break;
-         case ARROW_RIGHT_KEY: /* TODO */ break;
-         case ARROW_LEFT_KEY : /* TODO */ break;
+         case ARROW_RIGHT_KEY: moveBufPtr(_readBufPtr + 1); break;
+         case ARROW_LEFT_KEY : moveBufPtr(_readBufPtr - 1); break;
          case PG_UP_KEY      : moveToHistory(_historyIdx - PG_OFFSET); break;
          case PG_DOWN_KEY    : moveToHistory(_historyIdx + PG_OFFSET); break;
          case TAB_KEY        : /* TODO */ break;
@@ -85,8 +85,24 @@ CmdParser::readCmdInt(istream& istr)
 bool
 CmdParser::moveBufPtr(char* const ptr)
 {
-   // TODO...
-   return true;
+    // check if ptr is in the range
+    if(!(_readBuf <= ptr && ptr <= _readBufEnd))
+    {
+        mybeep();
+        return false;
+    }
+    // move to right or left
+    while(ptr < _readBufPtr)
+    {
+        cout << '\b';
+        _readBufPtr--;
+    }
+    while(ptr > _readBufPtr)
+    {
+        cout << *_readBufPtr;
+        _readBufPtr++;
+    }
+    return true;
 }
 
 
@@ -134,8 +150,24 @@ CmdParser::deleteChar()
 void
 CmdParser::insertChar(char ch, int repeat)
 {
-   // TODO...
-   assert(repeat >= 1);
+    assert(repeat >= 1);
+    char * old_readBufEnd = _readBufEnd;
+    char * old_readBufPtr = _readBufPtr;
+
+    // class data
+    for(char * copy_ptr = (old_readBufEnd - 1);copy_ptr >= old_readBufPtr;copy_ptr--)
+        *(copy_ptr + repeat) = *(copy_ptr);
+    for(int i = 0;i < repeat;i++)
+        *(old_readBufPtr + i) = ch;
+
+    // print
+    for(char * print_ptr = old_readBufPtr;print_ptr < old_readBufEnd + repeat;print_ptr++)
+        cout << *print_ptr;
+
+    // modify the position of pointers
+    _readBufEnd += repeat;
+    _readBufPtr = _readBufEnd;  // first set _readBufPtr to the current cursor on screen
+    moveBufPtr(old_readBufPtr + repeat);    // second, use moveBufPtr to modify the cursor and _readBufPtr
 }
 
 // 1. Delete the line that is currently shown on the screen
