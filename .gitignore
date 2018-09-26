@@ -2,11 +2,11 @@ a.out
 *.swp
 
 # hw2
-cmdCharDef.o
-cmdReader
-cmdReader-ref
-cmdReader.o
-main.o
-testAsc
-testAsc.o
+hw2/cmdCharDef.o
+hw2/cmdReader
+hw2/cmdReader-ref
+hw2/cmdReader.o
+hw2/main.o
+hw2/testAsc
+hw2/testAsc.o
 
