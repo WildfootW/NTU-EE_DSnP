@@ -229,7 +229,19 @@ CmdParser::deleteLine()
 void
 CmdParser::moveToHistory(int index)
 {
-   // TODO...
+//    if()
+//    {
+//        mybeep();
+//        return;
+//    }
+
+    //save current line to history vector
+    //if(!_tempCmdStored)
+    //{
+    //    addHistory();
+    //    _tempCmdStored = true;
+    //}
+
 }
 
 
@@ -248,7 +260,26 @@ CmdParser::moveToHistory(int index)
 void
 CmdParser::addHistory()
 {
-   // TODO...
+    *_readBufEnd = '\0';
+    string str(_readBuf);
+
+    _historyIdx = _history.size();
+    if(_tempCmdStored)
+    {
+        _history.pop_back();    // pop temp saved string
+        _tempCmdStored = false;
+    }
+
+    // remove ' ' at the beginning and end of str
+    unsigned int NewStrBegin = str.find_first_not_of(' ');
+    unsigned int NewStrEnd = str.find_last_not_of(' ');
+    unsigned int NewStrRange = NewStrEnd - NewStrBegin + 1;
+    if(NewStrBegin == string::npos) // null string
+        return;
+
+    str = str.substr(NewStrBegin, NewStrRange);
+    _history.push_back(str);
+    _historyIdx++;
 }
 
 
