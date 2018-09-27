@@ -46,7 +46,7 @@ CmdParser::readCmdInt(istream& istr)
          case HOME_KEY       : moveBufPtr(_readBuf); break;
          case LINE_END_KEY   :
          case END_KEY        : moveBufPtr(_readBufEnd); break;
-         case BACK_SPACE_KEY : /* TODO */ break;
+         case BACK_SPACE_KEY : moveBufPtr(_readBufPtr - 1); deleteChar(); break;
          case DELETE_KEY     : deleteChar(); break;
          case NEWLINE_KEY    : addHistory();
                                cout << char(NEWLINE_KEY);
@@ -128,8 +128,28 @@ CmdParser::moveBufPtr(char* const ptr)
 bool
 CmdParser::deleteChar()
 {
-   // TODO...
-   return true;
+    char * old_readBufPtr = _readBufPtr;
+
+    // check if cursor is on the end of line
+    if(_readBufPtr == _readBufEnd)
+    {
+        mybeep();
+        return false;
+    }
+
+    // modify data members
+    for(char * copy_ptr = _readBufPtr;copy_ptr < _readBufEnd;copy_ptr++)
+    {
+        *copy_ptr = *(copy_ptr + 1);
+    }
+
+    // print
+    for(;_readBufPtr < _readBufEnd;_readBufPtr++)
+        cout << *_readBufPtr;
+    cout << ' ';
+    moveBufPtr(old_readBufPtr);
+    _readBufEnd--;
+    return true;
 }
 
 // 1. Insert character 'ch' for "repeat" times at _readBufPtr
@@ -161,13 +181,10 @@ CmdParser::insertChar(char ch, int repeat)
         *(old_readBufPtr + i) = ch;
 
     // print
-    for(char * print_ptr = old_readBufPtr;print_ptr < old_readBufEnd + repeat;print_ptr++)
-        cout << *print_ptr;
-
-    // modify the position of pointers
-    _readBufEnd += repeat;
-    _readBufPtr = _readBufEnd;  // first set _readBufPtr to the current cursor on screen
+    for(;_readBufPtr < old_readBufEnd + repeat;_readBufPtr++)
+        cout << *_readBufPtr;
     moveBufPtr(old_readBufPtr + repeat);    // second, use moveBufPtr to modify the cursor and _readBufPtr
+    _readBufEnd += repeat;      // modify the position of pointers
 }
 
 // 1. Delete the line that is currently shown on the screen
