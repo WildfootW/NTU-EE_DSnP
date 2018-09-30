@@ -36,37 +36,40 @@ CmdParser::readCmd()
 void
 CmdParser::readCmdInt(istream& istr)
 {
-   resetBufAndPrintPrompt();
+    resetBufAndPrintPrompt();
 
-   while (1) {
-      ParseChar pch = getChar(istr);
-      if (pch == INPUT_END_KEY) break;
-      switch (pch) {
-         case LINE_BEGIN_KEY :
-         case HOME_KEY       : moveBufPtr(_readBuf); break;
-         case LINE_END_KEY   :
-         case END_KEY        : moveBufPtr(_readBufEnd); break;
-         case BACK_SPACE_KEY : moveBufPtr(_readBufPtr - 1); deleteChar(); break;
-         case DELETE_KEY     : deleteChar(); break;
-         case NEWLINE_KEY    : addHistory();
-                               cout << char(NEWLINE_KEY);
-                               resetBufAndPrintPrompt(); break;
-         case ARROW_UP_KEY   : moveToHistory(_historyIdx - 1); break;
-         case ARROW_DOWN_KEY : moveToHistory(_historyIdx + 1); break;
-         case ARROW_RIGHT_KEY: moveBufPtr(_readBufPtr + 1); break;
-         case ARROW_LEFT_KEY : moveBufPtr(_readBufPtr - 1); break;
-         case PG_UP_KEY      : moveToHistory(_historyIdx - PG_OFFSET); break;
-         case PG_DOWN_KEY    : moveToHistory(_historyIdx + PG_OFFSET); break;
-         case TAB_KEY        : insertChar(' ', TAB_POSITION - ((_readBufPtr - _readBuf) % TAB_POSITION)); break;
-         case INSERT_KEY     : // not yet supported; fall through to UNDEFINE
-         case UNDEFINED_KEY:   mybeep(); break;
-         default:  // printable character
-            insertChar(char(pch)); break;
-      }
-      #ifdef TA_KB_SETTING
-      taTestOnly();
-      #endif
-   }
+    while (1) {
+        ParseChar pch = getChar(istr);
+        if (pch == INPUT_END_KEY) break;
+        switch (pch) {
+            case LINE_BEGIN_KEY :
+            case HOME_KEY       : moveBufPtr(_readBuf); break;
+            case LINE_END_KEY   :
+            case END_KEY        : moveBufPtr(_readBufEnd); break;
+            case BACK_SPACE_KEY :
+                if(moveBufPtr(_readBufPtr - 1))
+                    deleteChar();
+                break;
+            case DELETE_KEY     : deleteChar(); break;
+            case NEWLINE_KEY    : addHistory();
+                                  cout << char(NEWLINE_KEY);
+                                  resetBufAndPrintPrompt(); break;
+            case ARROW_UP_KEY   : moveToHistory(_historyIdx - 1); break;
+            case ARROW_DOWN_KEY : moveToHistory(_historyIdx + 1); break;
+            case ARROW_RIGHT_KEY: moveBufPtr(_readBufPtr + 1); break;
+            case ARROW_LEFT_KEY : moveBufPtr(_readBufPtr - 1); break;
+            case PG_UP_KEY      : moveToHistory(_historyIdx - PG_OFFSET); break;
+            case PG_DOWN_KEY    : moveToHistory(_historyIdx + PG_OFFSET); break;
+            case TAB_KEY        : insertChar(' ', TAB_POSITION - ((_readBufPtr - _readBuf) % TAB_POSITION)); break;
+            case INSERT_KEY     : // not yet supported; fall through to UNDEFINE
+            case UNDEFINED_KEY:   mybeep(); break;
+            default:  // printable character
+                insertChar(char(pch)); break;
+        }
+        #ifdef TA_KB_SETTING
+        taTestOnly();
+        #endif
+    }
 }
 
 
@@ -129,22 +132,24 @@ bool
 CmdParser::deleteChar()
 {
     char * old_readBufPtr = _readBufPtr;
+    char * old_readBufEnd = _readBufEnd;
 
     // check if cursor is on the end of line
-    if(_readBufPtr == _readBufEnd)
+    if(_readBufPtr == old_readBufEnd)
     {
         mybeep();
         return false;
     }
 
     // modify data members
-    for(char * copy_ptr = _readBufPtr;copy_ptr < _readBufEnd;copy_ptr++)
+    for(char * copy_ptr = old_readBufPtr;copy_ptr < old_readBufEnd - 1;copy_ptr++)
     {
         *copy_ptr = *(copy_ptr + 1);
     }
+    *(old_readBufEnd - 1) = '\0';
 
     // print
-    for(;_readBufPtr < _readBufEnd;_readBufPtr++)
+    for(;_readBufPtr < old_readBufEnd;_readBufPtr++)
         cout << *_readBufPtr;
     cout << ' ';
     moveBufPtr(old_readBufPtr);
@@ -185,6 +190,7 @@ CmdParser::insertChar(char ch, int repeat)
         cout << *_readBufPtr;
     moveBufPtr(old_readBufPtr + repeat);    // second, use moveBufPtr to modify the cursor and _readBufPtr
     _readBufEnd += repeat;      // modify the position of pointers
+
 }
 
 // 1. Delete the line that is currently shown on the screen
@@ -229,18 +235,49 @@ CmdParser::deleteLine()
 void
 CmdParser::moveToHistory(int index)
 {
-//    if()
-//    {
-//        mybeep();
-//        return;
-//    }
+    int _historyEnd = _history.size();
+    if(index < _historyIdx)
+    {
+        if(_historyIdx == 0)
+        {
+            mybeep();
+            return;
+        }
+        if(index < 0)
+            index = 0;
+        //save current line to history vector
+        //if(!_tempCmdStored)
+        //{
+        //    addHistory();
+        //    _tempCmdStored = true;
+        //}
+        //
 
-    //save current line to history vector
-    //if(!_tempCmdStored)
-    //{
-    //    addHistory();
-    //    _tempCmdStored = true;
-    //}
+
+    }
+    else if(index > _historyIdx)
+    {
+        if(_historyIdx == _historyEnd - 1)
+        {
+            mybeep();
+            return;
+        }
+        if(index >= _historyEnd)
+            index = _historyEnd - 1;
+    }
+    // print
+    moveBufPtr(_readBuf);
+    long int StrLength = _readBufEnd - _readBuf;
+    if(StrLength < 1)
+        StrLength = 1;
+
+    insertChar(' ', StrLength);
+    moveBufPtr(_readBuf);
+    for(unsigned int i = 0;i < _history[index].length();i++)
+        insertChar(_history[index][i]);
+
+    //cout << "index = " << index << endl;
+    //cout << "_historyIdx = " << _historyIdx << endl;
 
 }
 
@@ -274,12 +311,16 @@ CmdParser::addHistory()
     unsigned int NewStrBegin = str.find_first_not_of(' ');
     unsigned int NewStrEnd = str.find_last_not_of(' ');
     unsigned int NewStrRange = NewStrEnd - NewStrBegin + 1;
-    if(NewStrBegin == string::npos) // null string
+
+    if(NewStrBegin > str.size()) // null string
         return;
 
-    str = str.substr(NewStrBegin, NewStrRange);
-    _history.push_back(str);
-    _historyIdx++;
+    else
+    {
+        str = str.substr(NewStrBegin, NewStrRange);
+        _history.push_back(str);
+        _historyIdx++;
+    }
 }
 
 
@@ -296,3 +337,12 @@ CmdParser::retrieveHistory()
    cout << _readBuf;
    _readBufPtr = _readBufEnd = _readBuf + _history[_historyIdx].size();
 }
+
+// lazy debug
+// printf("\n");
+// printf("_readBuf: %p\n", _readBuf);
+// printf("_readBufEnd: %p\n", _readBufEnd);
+// printf("length: %ld\n", _readBufEnd - _readBuf);
+// printf("_readBufPtr: %p\n", _readBufPtr);
+// printf("length: %ld\n", _readBufPtr - _readBuf);
+
