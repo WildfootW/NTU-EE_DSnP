@@ -18,6 +18,17 @@ void mybeep();
 char mygetc(istream&);
 ParseChar getChar(istream&);
 
+//inline void replaceChar(char ch, int repeat = 1)
+//{
+//    for(int i = 0;i < repeat;i++)
+//    {
+//        cout << ch;
+//        _readBufPtr++;
+//    }
+//    if(_readBufEnd < _readBufPtr)
+//        _readBufEnd = _readBufPtr;
+//}
+
 
 //----------------------------------------------------------------------
 //    Member Function for class Parser
@@ -179,7 +190,9 @@ CmdParser::insertChar(char ch, int repeat)
     char * old_readBufEnd = _readBufEnd;
     char * old_readBufPtr = _readBufPtr;
 
+
     // class data
+    _readBufEnd += repeat;      // modify the position of pointers
     for(char * copy_ptr = (old_readBufEnd - 1);copy_ptr >= old_readBufPtr;copy_ptr--)
         *(copy_ptr + repeat) = *(copy_ptr);
     for(int i = 0;i < repeat;i++)
@@ -189,8 +202,6 @@ CmdParser::insertChar(char ch, int repeat)
     for(;_readBufPtr < old_readBufEnd + repeat;_readBufPtr++)
         cout << *_readBufPtr;
     moveBufPtr(old_readBufPtr + repeat);    // second, use moveBufPtr to modify the cursor and _readBufPtr
-    _readBufEnd += repeat;      // modify the position of pointers
-
 }
 
 // 1. Delete the line that is currently shown on the screen
@@ -210,7 +221,17 @@ CmdParser::insertChar(char ch, int repeat)
 void
 CmdParser::deleteLine()
 {
-   // TODO...
+    long int StrLength = _readBufEnd - _readBuf;
+
+    moveBufPtr(_readBuf);
+    for(int i = 0;i < StrLength;i++)
+    {
+        cout << ' ';
+        _readBufPtr++;
+    }
+    moveBufPtr(_readBuf);
+    _readBufPtr = _readBufEnd = _readBuf;
+    *_readBufEnd = '\0';
 }
 
 
@@ -236,6 +257,12 @@ void
 CmdParser::moveToHistory(int index)
 {
     int _historyEnd = _history.size();
+
+    //cout << endl;
+    //cout << "_history.size(): " << _history.size() << endl;
+    //cout << "_historyIdx: " << _historyIdx << endl;
+    //cout << "_historyEnd: " << _historyEnd << endl;
+
     if(index < _historyIdx)
     {
         if(_historyIdx == 0)
@@ -246,18 +273,16 @@ CmdParser::moveToHistory(int index)
         if(index < 0)
             index = 0;
         //save current line to history vector
-        //if(!_tempCmdStored)
-        //{
-        //    addHistory();
-        //    _tempCmdStored = true;
-        //}
-        //
-
-
+        if(!_tempCmdStored)
+        {
+            *_readBufEnd = '\0';
+            _tempCmdStored = true;
+            _history.push_back(string(_readBuf));
+        }
     }
     else if(index > _historyIdx)
     {
-        if(_historyIdx == _historyEnd - 1)
+        if(_historyIdx == _historyEnd || (_tempCmdStored && _historyIdx == _historyEnd - 1))
         {
             mybeep();
             return;
@@ -265,19 +290,10 @@ CmdParser::moveToHistory(int index)
         if(index >= _historyEnd)
             index = _historyEnd - 1;
     }
-    // print
-    moveBufPtr(_readBuf);
-    long int StrLength = _readBufEnd - _readBuf;
-    if(StrLength < 1)
-        StrLength = 1;
-
-    insertChar(' ', StrLength);
-    moveBufPtr(_readBuf);
-    for(unsigned int i = 0;i < _history[index].length();i++)
-        insertChar(_history[index][i]);
-
-    //cout << "index = " << index << endl;
-    //cout << "_historyIdx = " << _historyIdx << endl;
+    else
+        return;
+    _historyIdx = index;
+    retrieveHistory();
 
 }
 
@@ -300,12 +316,12 @@ CmdParser::addHistory()
     *_readBufEnd = '\0';
     string str(_readBuf);
 
-    _historyIdx = _history.size();
     if(_tempCmdStored)
     {
         _history.pop_back();    // pop temp saved string
         _tempCmdStored = false;
     }
+    _historyIdx = _history.size();
 
     // remove ' ' at the beginning and end of str
     unsigned int NewStrBegin = str.find_first_not_of(' ');
