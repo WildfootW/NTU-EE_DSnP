@@ -1,0 +1,33 @@
+Practice #2 的
+第三題：
+
+[原先]
+3. (p24) Define a class T with a data member ”int _d”, a non-const 
+method f() in which _d is incremented by 10, and a const....
+
+[改成]
+(p24) Define a class T with a data member ”int _d”, a non-const 
+method f() in which _d is incremented by 10 and return a reference to 
+(*this), and a const....
+
+
+第七題：
+
+class N_ {
+   size_t    _d[1 << 17];  // 1MB 
+};
+
+==> 的確是 128K * 8Byte (for size_t) = 1MB 的 memory 沒錯。
+
+這最主要是要讓 class N 裡面的 N_ *_n 用 pointer 來 share memory 
+make sense (否則如果不是用 pointer, 則會一直 copy object, 很浪費記
+憶體與時間)。
+
+
+BTW, 練習就是練習，不管你寫了多少，想要交的話請注意 deadline 
+(11pm this coming Sunday)，超過 deadline 上傳就會關閉了。我們不會
+評分，如果有不會的，請等我上課時再來示範。
+
+BTW2, 關於第七題所 sample 出來的機率，有沒有一個可以解釋的數學模
+型呢？請各位數學大神幫忙解惑一下 :)
+
