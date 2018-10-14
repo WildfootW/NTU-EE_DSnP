@@ -10,3 +10,19 @@ hw2/main.o
 hw2/testAsc
 hw2/testAsc.o
 
+# hw3
+hw3/bin/
+hw3/lib/libcmd.a
+hw3/lib/libdb.a
+hw3/lib/libutil.a
+hw3/src/cmd/cmdCharDef.o
+hw3/src/cmd/cmdCommon.o
+hw3/src/cmd/cmdParser.o
+hw3/src/db/dbCmd.o
+hw3/src/db/dbJson.o
+hw3/src/main/main.o
+hw3/src/test/test.o
+hw3/src/util/myGetChar.o
+hw3/src/util/myString.o
+hw3/src/util/util.o
+
