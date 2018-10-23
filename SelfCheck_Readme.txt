@@ -16,6 +16,9 @@ To use the SelfCheck program
 
    For example, ./SelfCheck b77503057_hw1.tgz
 
+   ```
+   tar zcvf b07611012_hw3.tgz b07611012_hw3
+   ```
 
 What does the program checks
 ============================
