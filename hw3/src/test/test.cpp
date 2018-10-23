@@ -18,6 +18,8 @@ extern DBJson dbjson;
 class CmdParser;
 CmdParser* cmdMgr = 0; // for linking purpose
 
+void simple_test();
+
 int
 main(int argc, char** argv)
 {
@@ -42,28 +44,35 @@ main(int argc, char** argv)
       exit(-1);
    }
 
-   cout << "========================" << endl;
-   cout << " Print JSON object" << endl;
-   cout << "========================" << endl;
-   cout << dbjson << endl;
+    cout << "========================" << endl;
+    cout << " Print JSON object" << endl;
+    cout << "========================" << endl;
 
-   // TODO
-   // Insert what you want to test here by calling DBJson's member functions
-    size_t db_size;
-    cout << "max: " << dbjson.max(db_size) << endl;
-    cout << "min: " << dbjson.min(db_size) << endl;
-    cout << "sum: " << dbjson.sum() << endl;
-    cout << "ave: " << fixed << setprecision(2) << dbjson.ave() << endl;
+    cout << dbjson << endl;
+    simple_test();
 
-    cout << "sort by key:\n";
+    cout << "\nsort by key:\n";
     DBSortKey sortkey;
     dbjson.sort(sortkey);
     cout << dbjson << endl;
+    simple_test();
 
-    cout << "sort by value:\n";
+    cout << "\nsort by value:\n";
     DBSortValue sortvalue;
     dbjson.sort(sortvalue);
     cout << dbjson << endl;
+    simple_test();
 
     return 0;
+}
+
+void simple_test()
+{
+    size_t idx;
+    cout << "max: " << setw(10) << dbjson.max(idx);
+    cout << " idx: " << idx << endl;
+    cout << "min: " << setw(10) << dbjson.min(idx);
+    cout << " idx: " << idx << endl;
+    cout << "sum: " << setw(10) << dbjson.sum() << endl;
+    cout << "ave: " << setw(10) << fixed << setprecision(2) << dbjson.ave() << endl;
 }

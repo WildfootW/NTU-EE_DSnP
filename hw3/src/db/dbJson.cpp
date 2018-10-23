@@ -32,9 +32,6 @@ operator << (ostream& os, const DBJsonElem& j)
 
 istream& operator >> (istream& is, DBJson& j)
 {
-   // TODO: to read in data from Json file and store them in a DB 
-   // - You can assume the input file is with correct JSON file format
-   // - NO NEED to handle error file format
     assert(j._obj.empty());
 
     is.ignore(numeric_limits<streamsize>::max(), '{');
@@ -137,8 +134,12 @@ DBJson::max(size_t& idx) const
     if(empty())
         idx = size();
     else
-        for(DBJsonElem e:_obj)
-            maxN = std::max(maxN, e.value());
+        for(size_t i = 0;i < size();i++)
+            if(_obj[i].value() > maxN)
+            {
+                maxN = _obj[i].value();
+                idx = i;
+            }
 
     return maxN;
 }
@@ -151,8 +152,12 @@ DBJson::min(size_t& idx) const
     if(empty())
         idx = size();
     else
-        for(DBJsonElem e:_obj)
-            minN = std::min(minN, e.value());
+        for(size_t i = 0;i < size();i++)
+            if(_obj[i].value() < minN)
+            {
+                minN = _obj[i].value();
+                idx = i;
+            }
 
     return  minN;
 }
