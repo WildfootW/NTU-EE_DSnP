@@ -160,7 +160,7 @@ HistoryCmd::help() const
 //
 CmdExecStatus
 DofileCmd::exec(const string& option)
-{     
+{
    // check option 
    string token;
    if (!CmdExec::lexSingleOption(option, token, false))
@@ -172,10 +172,10 @@ DofileCmd::exec(const string& option)
 
 void
 DofileCmd::usage(ostream& os) const
-{  
+{
    os << "Usage: DOfile <(string file)>" << endl;
-}  
-      
+}
+
 void
 DofileCmd::help() const
 {

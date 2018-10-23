@@ -66,7 +66,7 @@ CmdParser::regCmd(const string& cmd, unsigned nCmp, CmdExec* e)
       mandCmd[i] = toupper(mandCmd[i]);
    string optCmd = cmd.substr(nCmp);
    assert(e != 0);
-   e->setOptCmd(optCmd);
+   e->setOptCmd(optCmd);    // if cmd is HIStory than optCmd store "tory"
 
    // insert (mandCmd, e) to _cmdMap; return false if insertion fails.
    return (_cmdMap.insert(CmdRegPair(mandCmd, e))).second;
@@ -97,7 +97,9 @@ CmdParser::execOneCmd()
 void
 CmdParser::printHelps() const
 {
-   // TODO...
+    for(auto it = _cmdMap.begin(); it != _cmdMap.end(); it++)
+        it->second->help();
+    cout << endl;
 }
 
 void
@@ -134,13 +136,23 @@ CmdParser::printHistory(int nPrint) const
 CmdExec*
 CmdParser::parseCmd(string& option)
 {
-   assert(_tempCmdStored == false);
-   assert(!_history.empty());
-   string str = _history.back();
+    assert(_tempCmdStored == false);
+    assert(!_history.empty());
 
-   // TODO...
-   assert(str[0] != 0 && str[0] != ' ');
-   return NULL;
+    string str = _history.back();   // str = "cmd opt opt opt"
+    size_t found_space = str.find(" ");
+    if(found_space != ::string::npos)
+        option = str.substr(found_space+ 1, str.length());
+    string cmdName = str.substr(0, found_space);
+
+    CmdExec * e = getCmd(cmdName);
+    if(e == 0)
+        cerr << "Illegal command!! " << cmdName << "\n";
+    else
+        return e;
+
+    assert(str[0] != 0 && str[0] != ' ');
+    return NULL;
 }
 
 // Remove this function for TODO...
@@ -310,9 +322,28 @@ CmdParser::listCmd(const string& str)
 CmdExec*
 CmdParser::getCmd(string cmd)
 {
-   CmdExec* e = 0;
-   // TODO...
-   return e;
+    CmdExec* e = 0;
+
+    for (size_t i = 0; i < cmd.length(); i++)
+        cmd[i] = toupper(cmd[i]);
+
+    for(size_t i = 1;i <= cmd.length();i++)
+    {
+        if(_cmdMap.find(cmd.substr(0, i)) != _cmdMap.end())
+        {
+            string mandCmd = cmd.substr(0, i);
+
+            // check _optCmd
+            //cout << mandCmd + _cmdMap[mandCmd]->getOptCmd() << " " << cmd << " " << mandCmd.length();
+            if(myStrNCmp(mandCmd + _cmdMap[mandCmd]->getOptCmd(), cmd, mandCmd.length()) == 0)
+            {
+                e = _cmdMap[mandCmd];
+            }
+            break;
+        }
+    }
+
+    return e;
 }
 
 
