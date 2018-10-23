@@ -35,15 +35,59 @@ istream& operator >> (istream& is, DBJson& j)
    // TODO: to read in data from Json file and store them in a DB 
    // - You can assume the input file is with correct JSON file format
    // - NO NEED to handle error file format
-   assert(j._obj.empty());
+    assert(j._obj.empty());
 
-   return is;
+    is.ignore(numeric_limits<streamsize>::max(), '{');
+    while(true)
+    {
+        string new_key;
+        int new_value;
+
+        char next_char;
+        while(true)
+        {
+            next_char = is.get();
+            if(next_char == '"' || next_char == '}')
+                break;
+        }
+        if(next_char == '}')
+            break;
+        is.unget();  // put '"' back
+
+        is.ignore(numeric_limits<streamsize>::max(), '"');
+        getline(is, new_key, '"');
+        is.ignore(numeric_limits<streamsize>::max(), ':');
+        while(true)
+        {
+            next_char = is.get();
+            if(('0' <= next_char && next_char <= '9') || next_char == '-')
+            {
+                is.unget();
+                break;
+            }
+        }
+        is >> new_value;
+
+        //clog << new_key << " " << new_value << endl;
+        assert(isValidVarName(new_key));
+
+        DBJsonElem json_elem(new_key, new_value);
+        //assert(j.add(json_elem));
+        j.add(json_elem);
+    }
+    return is;
 }
 
 ostream& operator << (ostream& os, const DBJson& j)
 {
-   // TODO
-   return os;
+    os << "{\n";
+    for(auto it = j._obj.begin(); it != j._obj.end() - 1; it++)
+    {
+        os << "    " << *it << ",\n";
+    }
+    os << "    " << j._obj.back() << "\n";
+    os << "}";
+    return os;
 }
 
 /**********************************************/
@@ -55,41 +99,62 @@ ostream& operator << (ostream& os, const DBJson& j)
 void
 DBJson::reset()
 {
-   // TODO
+    _obj.clear();
 }
 
 // return false if key is repeated
 bool
 DBJson::add(const DBJsonElem& elm)
 {
-   // TODO
-   return true;
+    // check if repeat
+    for(DBJsonElem e:_obj)
+    {
+        if(e.key() == elm.key())
+        {
+            cerr << elm << " is duplicate with " << e << ". skip...\n";
+            return false;
+        }
+    }
+
+    _obj.push_back(elm);
+    return true;
 }
 
 // return NAN if DBJson is empty
 float
 DBJson::ave() const
 {
-   // TODO
-   return 0.0;
+    if(empty())
+        return NAN;
+    return sum() / (double)size();
 }
 
 // If DBJson is empty, set idx to size() and return INT_MIN
 int
 DBJson::max(size_t& idx) const
 {
-   // TODO
-   int maxN = INT_MIN;
-   return  maxN;
+    int maxN = INT_MIN;
+    if(empty())
+        idx = size();
+    else
+        for(DBJsonElem e:_obj)
+            maxN = std::max(maxN, e.value());
+
+    return maxN;
 }
 
 // If DBJson is empty, set idx to size() and return INT_MIN
 int
 DBJson::min(size_t& idx) const
 {
-   // TODO
-   int minN = INT_MAX;
-   return  minN;
+    int minN = INT_MAX;
+    if(empty())
+        idx = size();
+    else
+        for(DBJsonElem e:_obj)
+            minN = std::min(minN, e.value());
+
+    return  minN;
 }
 
 void
@@ -110,7 +175,8 @@ DBJson::sort(const DBSortValue& s)
 int
 DBJson::sum() const
 {
-   // TODO
    int s = 0;
+   for(DBJsonElem e:_obj)
+       s += e.value();
    return s;
 }

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <iomanip>
 #include "dbJson.h"
 
 using namespace std;
@@ -48,6 +49,21 @@ main(int argc, char** argv)
 
    // TODO
    // Insert what you want to test here by calling DBJson's member functions
+    size_t db_size;
+    cout << "max: " << dbjson.max(db_size) << endl;
+    cout << "min: " << dbjson.min(db_size) << endl;
+    cout << "sum: " << dbjson.sum() << endl;
+    cout << "ave: " << fixed << setprecision(2) << dbjson.ave() << endl;
 
-   return 0;
+    cout << "sort by key:\n";
+    DBSortKey sortkey;
+    dbjson.sort(sortkey);
+    cout << dbjson << endl;
+
+    cout << "sort by value:\n";
+    DBSortValue sortvalue;
+    dbjson.sort(sortvalue);
+    cout << dbjson << endl;
+
+    return 0;
 }
