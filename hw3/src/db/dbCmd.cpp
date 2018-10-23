@@ -19,8 +19,20 @@ DBJson dbjson;
 bool
 initDbCmd()
 {
-   // TODO...
-   return true;
+    if (!(cmdMgr->regCmd("DBAPpend", 4, new DBAppendCmd) &&
+          cmdMgr->regCmd("DBAVerage", 4, new DBAveCmd) &&
+          cmdMgr->regCmd("DBCount", 3, new DBCountCmd) &&
+          cmdMgr->regCmd("DBMAx", 4, new DBMaxCmd) &&
+          cmdMgr->regCmd("DBMIn", 4, new DBMinCmd) &&
+          cmdMgr->regCmd("DBPrint", 3, new DBPrintCmd) &&
+          cmdMgr->regCmd("DBRead", 3, new DBReadCmd) &&
+          cmdMgr->regCmd("DBSOrt", 4, new DBSortCmd) &&
+          cmdMgr->regCmd("DBSUm", 4, new DBSumCmd)
+       )) {
+       cerr << "Registering \"init\" dbcommands fails... exiting" << endl;
+       return false;
+    }
+    return true;
 }
 
 //----------------------------------------------------------------------
@@ -29,10 +41,26 @@ initDbCmd()
 CmdExecStatus
 DBAppendCmd::exec(const string& option)
 {
-   // TODO...
-   // check option
+    if(!dbjson)
+    {
+        cerr << "Error: DB is not created yet!!" << endl;
+        return CMD_EXEC_ERROR;
+    }
 
-   return CMD_EXEC_DONE;
+    // check option
+    vector<string> token;
+    if(!CmdExec::lexOptions(option, token, 2))
+        return CMD_EXEC_ERROR;
+
+    int num;
+    if(!myStr2Int(token[1], num))
+        return CmdExec::errorOption(CMD_OPT_ILLEGAL, token[1]);
+
+    DBJsonElem json_elem(token[0], num);
+    if(!dbjson.add(json_elem))
+        return CMD_EXEC_ERROR;
+
+    return CMD_EXEC_DONE;
 }
 
 void
@@ -44,8 +72,8 @@ DBAppendCmd::usage(ostream& os) const
 void
 DBAppendCmd::help() const
 {
-   cout << setw(15) << left << "DBAPpend: "
-        << "append an JSON element (key-value pair) to the end of DB" << endl;
+    cout << setw(15) << left << "DBAPpend: "
+         << "append an JSON element (key-value pair) to the end of DB" << endl;
 }
 
 
@@ -54,7 +82,7 @@ DBAppendCmd::help() const
 //----------------------------------------------------------------------
 CmdExecStatus
 DBAveCmd::exec(const string& option)
-{  
+{
    // check option
    if (!CmdExec::lexNoOption(option))
       return CMD_EXEC_ERROR;
@@ -74,7 +102,7 @@ DBAveCmd::exec(const string& option)
 
 void
 DBAveCmd::usage(ostream& os) const
-{     
+{
    os << "Usage: DBAVerage" << endl;
 }
 
@@ -91,7 +119,7 @@ DBAveCmd::help() const
 //----------------------------------------------------------------------
 CmdExecStatus
 DBCountCmd::exec(const string& option)
-{  
+{
    // check option
    if (!CmdExec::lexNoOption(option))
       return CMD_EXEC_ERROR;
@@ -109,7 +137,7 @@ DBCountCmd::exec(const string& option)
 
 void
 DBCountCmd::usage(ostream& os) const
-{     
+{
    os << "Usage: DBCount" << endl;
 }
 
@@ -126,7 +154,7 @@ DBCountCmd::help() const
 //----------------------------------------------------------------------
 CmdExecStatus
 DBMaxCmd::exec(const string& option)
-{  
+{
    // check option
    if (!CmdExec::lexNoOption(option))
       return CMD_EXEC_ERROR;
@@ -144,7 +172,7 @@ DBMaxCmd::exec(const string& option)
 
 void
 DBMaxCmd::usage(ostream& os) const
-{     
+{
    os << "Usage: DBMAx" << endl;
 }
 
@@ -161,7 +189,7 @@ DBMaxCmd::help() const
 //----------------------------------------------------------------------
 CmdExecStatus
 DBMinCmd::exec(const string& option)
-{  
+{
    // check option
    if (!CmdExec::lexNoOption(option))
       return CMD_EXEC_ERROR;
@@ -179,7 +207,7 @@ DBMinCmd::exec(const string& option)
 
 void
 DBMinCmd::usage(ostream& os) const
-{     
+{
    os << "Usage: DBMIn" << endl;
 }
 
@@ -196,10 +224,35 @@ DBMinCmd::help() const
 //----------------------------------------------------------------------
 CmdExecStatus
 DBPrintCmd::exec(const string& option)
-{  
-   // TODO...
+{
+    if(!dbjson)
+    {
+        cerr << "Error: DB is not created yet!!" << endl;
+        return CMD_EXEC_ERROR;
+    }
 
-   return CMD_EXEC_DONE;
+    string token;
+    if (!CmdExec::lexSingleOption(option, token)) // optional
+        return CMD_EXEC_ERROR;
+    if(token.size())
+    {
+        size_t idx;
+        if(dbjson.find(token, idx))
+        {
+            cout << dbjson[idx] << endl;
+        }
+        else
+        {
+            cerr << "Error: No JSON element with key \"" << token << "\" is found." << endl;
+            return CMD_EXEC_ERROR;
+        }
+        //else return CmdExec::errorOption(CMD_OPT_ILLEGAL, token);
+    }
+    else
+    {
+        cout << dbjson << endl;
+    }
+    return CMD_EXEC_DONE;
 }
 
 void
@@ -317,7 +370,7 @@ DBSortCmd::help() const
 //----------------------------------------------------------------------
 CmdExecStatus
 DBSumCmd::exec(const string& option)
-{  
+{
    // check option
    if (!CmdExec::lexNoOption(option))
       return CMD_EXEC_ERROR;
@@ -333,7 +386,7 @@ DBSumCmd::exec(const string& option)
 
 void
 DBSumCmd::usage(ostream& os) const
-{     
+{
    os << "Usage: DBSUm" << endl;
 }
 

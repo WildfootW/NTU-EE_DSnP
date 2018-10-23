@@ -66,7 +66,6 @@ istream& operator >> (istream& is, DBJson& j)
         is >> new_value;
 
         //clog << new_key << " " << new_value << endl;
-        assert(isValidVarName(new_key));
 
         DBJsonElem json_elem(new_key, new_value);
         //assert(j.add(json_elem));
@@ -103,6 +102,12 @@ DBJson::reset()
 bool
 DBJson::add(const DBJsonElem& elm)
 {
+    if(!isValidVarName(elm.key()))
+    {
+        cerr << elm << " is not valid. skip...\n";
+        return false;
+    }
+
     // check if repeat
     for(DBJsonElem e:_obj)
     {
@@ -160,6 +165,18 @@ DBJson::min(size_t& idx) const
             }
 
     return  minN;
+}
+
+bool
+DBJson::find(string token, size_t& idx) const
+{
+    for(size_t i = 0;i < size();i++)
+        if(_obj[i].key() == token)
+        {
+            idx = i;
+            return true;
+        }
+    return false;
 }
 
 void

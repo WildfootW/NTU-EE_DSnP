@@ -45,6 +45,7 @@ public:
    float ave() const;
    int max(size_t&) const;
    int min(size_t&) const;
+   bool find(string, size_t&) const;
    void sort(const DBSortKey&);
    void sort(const DBSortValue&);
    int sum() const;
@@ -58,9 +59,9 @@ public:
 
    // TODO modify these two functions according to the comments
    // return true if JSON file hasn't been read in
-   bool operator !() { return false; }
+   bool operator !() { return empty(); }
    // return this if JSON file has been read in; return NLL if not.
-   operator void* () const { return NULL; }
+   operator void* () const { return empty() ? NULL : (void*) this; }
 
    // Read DBJson
    friend istream& operator >> (istream& is, DBJson& j);
