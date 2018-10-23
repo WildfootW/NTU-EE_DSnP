@@ -68,5 +68,5 @@ ctags:
 
 linux18 linux16 mac:
 	@cd src/cmd; ln -sf cmdReader.o.$@ cmdReader.o
-	@cd ref; ln -sf $(EXEC)-$@ $(EXEC)-ref
+	@cd ref/..; ln -sf ref/$(EXEC)-$@ $(EXEC)-ref
 
