@@ -167,7 +167,7 @@ CmdParser::parseCmd(string& option)
 
     CmdExec * e = getCmd(cmdName);
     if(e == 0)
-        cerr << "Illegal command!! " << cmdName << "\n";
+        cerr << "Illegal command!! (" << cmdName << ")\n";
     else
         return e;
 
@@ -175,8 +175,6 @@ CmdParser::parseCmd(string& option)
     return NULL;
 }
 
-// Remove this function for TODO...
-//
 // This function is called by pressing 'Tab'.
 // It is to list the partially matched commands.
 // "str" is the partial string before current cursor position. It can be 
@@ -325,7 +323,66 @@ CmdParser::parseCmd(string& option)
 void
 CmdParser::listCmd(const string& str)
 {
-   // TODO...
+    cout << "\n";
+
+    string lead_str = str;
+    // case 1
+    if(str.find_first_not_of(' ') == string::npos)
+    {
+        size_t count = 0;
+        for(auto it = _cmdMap.begin(); it != _cmdMap.end(); it++)
+        {
+            if(count && !(count % 5))
+                cout << "\n";
+            count++;
+
+            cout << setw(12) << left << (it->first + it->second->getOptCmd());
+        }
+        reprintCmd();
+        return;
+    }
+
+    // remove lead blank
+    lead_str = lead_str.substr(lead_str.find_first_not_of(' '));
+
+    // case 2, 3, 4
+    if(lead_str.find(' ') == ::string::npos)
+    {
+        CmdMap match_cmd;
+        for(auto it = _cmdMap.begin(); it != _cmdMap.end(); it++)
+        {
+            if(!myStrNCmp(it->first + it->second->getOptCmd(), lead_str, 1))
+                match_cmd.insert(*it);
+        }
+        if(match_cmd.size() == 0) // case 4
+        {
+            mybeep();
+            reprintCmd();
+            return;
+        }
+        else if(match_cmd.size() == 1) // case 3
+        {
+            reprintCmd();
+            string insert_str = match_cmd.begin()->first + match_cmd.begin()->second->getOptCmd();
+            insert_str = insert_str.substr(lead_str.length());
+            cout << insert_str;
+            return;
+        }
+        else // case 2
+        {
+            size_t count = 0;
+            for(auto it = match_cmd.begin(); it != match_cmd.end(); it++)
+            {
+                if(count && !(count % 5))
+                    cout << "\n";
+                count++;
+                cout << setw(12) << left << (it->first + it->second->getOptCmd());
+            }
+            reprintCmd();
+            return;
+        }
+    }
+    // case 5, 6, 7 [TODO]
 }
 
 // cmd is a copy of the original input
