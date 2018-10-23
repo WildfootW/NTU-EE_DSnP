@@ -28,18 +28,35 @@ void mybeep();
 bool
 CmdParser::openDofile(const string& dof)
 {
-   // TODO...
-   _dofile = new ifstream(dof.c_str());
-   return true;
+    if(_dofileStack.size() >= 512)
+    {
+        //cerr << "Error: open too many dofile!! skip...\n";
+        return false;
+    }
+
+    ifstream * test_stream = new ifstream(dof.c_str());
+    if(!test_stream->is_open())
+        return false;
+
+    _dofileStack.push(_dofile);
+    _dofile = test_stream;
+    return true;
 }
 
 // Must make sure _dofile != 0
 void
 CmdParser::closeDofile()
 {
-   assert(_dofile != 0);
-   // TODO...
-   delete _dofile;
+    // check if dofile is end. if it is not, return
+    if(_dofile == 0 || !_dofile->eof())
+        return;
+
+    _dofile->close();
+    delete _dofile;
+    _dofile = _dofileStack.top();
+    _dofileStack.pop();
+
+    closeDofile();
 }
 
 // Return false if registration fails
@@ -76,6 +93,9 @@ CmdParser::regCmd(const string& cmd, unsigned nCmp, CmdExec* e)
 CmdExecStatus
 CmdParser::execOneCmd()
 {
+    if(_dofile != 0)
+        closeDofile();
+
    bool newCmd = false;
    if (_dofile != 0)
       newCmd = readCmd(*_dofile);
