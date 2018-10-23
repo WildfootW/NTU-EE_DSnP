@@ -1,0 +1,6 @@
+dofile do1
+dofile do2
+dofile do3
+dofile do4
+quit -f
+

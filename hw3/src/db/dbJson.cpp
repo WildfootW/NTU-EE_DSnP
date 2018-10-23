@@ -79,9 +79,9 @@ ostream& operator << (ostream& os, const DBJson& j)
     os << "{\n";
     for(auto it = j._obj.begin(); it != j._obj.end() - 1; it++)
     {
-        os << "    " << *it << ",\n";
+        os << "  " << *it << ",\n";
     }
-    os << "    " << j._obj.back() << "\n";
+    os << "  " << j._obj.back() << "\n";
     os << "}";
     return os;
 }
@@ -109,11 +109,12 @@ DBJson::add(const DBJsonElem& elm)
     }
 
     // check if repeat
-    for(DBJsonElem e:_obj)
+    for(const DBJsonElem & e:_obj)
     {
         if(e.key() == elm.key())
         {
-            cerr << elm << " is duplicate with " << e << ". skip...\n";
+            //cerr << elm << " is duplicate with " << e << ". skip...\n";
+            cerr << "Error: Element with key \"" << elm.key() << "\" already exists!!\n";
             return false;
         }
     }
@@ -198,7 +199,7 @@ int
 DBJson::sum() const
 {
    int s = 0;
-   for(DBJsonElem e:_obj)
+   for(const DBJsonElem & e:_obj)
        s += e.value();
    return s;
 }

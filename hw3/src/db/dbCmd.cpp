@@ -239,7 +239,7 @@ DBPrintCmd::exec(const string& option)
         size_t idx;
         if(dbjson.find(token, idx))
         {
-            cout << dbjson[idx] << endl;
+            cout << "{ " << dbjson[idx] << " }" << endl;
         }
         else
         {
@@ -251,6 +251,7 @@ DBPrintCmd::exec(const string& option)
     else
     {
         cout << dbjson << endl;
+        cout << "Total JSON elements: " << dbjson.size() << endl;
     }
     return CMD_EXEC_DONE;
 }
