@@ -386,20 +386,95 @@ CmdParser::listCmd(const string& str)
     }
     // case 5, 6, 7
     // split by ' '
-    rest_str = lead_str.substr(lead_str.find(' ') + 1);
+    rest_str = lead_str.substr(lead_str.find(' '));
     lead_str = lead_str.substr(0, lead_str.find(' '));
+    //clog << lead_str << "%\n";
+    //clog << rest_str << "%\n";
 
     CmdExec * e;
     e = getCmd(lead_str);
     // case 5, 6
     if(e != 0)
     {
-        // case 5
-        e->usage(cout);
-        reprintCmd();
-        return;
+        static string last_str = "";
+        static size_t last_tabcount;
 
-        // case 6 [TODO]
+        // case 6
+        if(last_str == str && last_tabcount + 1 == _tabPressCount)
+        {
+            last_tabcount = _tabPressCount;
+            rest_str = rest_str.substr(rest_str.find_last_of(' ') + 1);
+            vector<string> files;
+            if(listDir(files, rest_str, "."))
+                cerr << "Error: listDir sth wrong!\n";
+
+            if(files.size() == 0) // case 6.5
+            {
+                mybeep();
+                reprintCmd();
+                return;
+            }
+            else if(files.size() == 1) // case 6.1.3, 6.4
+            {
+                reprintCmd();
+                string insert_str = files[0];
+                insert_str = insert_str.substr(rest_str.length());
+                insert_str += " ";
+                for(size_t i = 0;i < insert_str.length();i++)
+                    insertChar(insert_str[i]);
+                return;
+            }
+            else // case 6.1.1, 6.1.2, 6.2, 6.3
+            {
+                // [TODO] need better algorithm
+                string common_prefix = "";
+                for(size_t i = 0;;i++)
+                {
+                    for(const string & file:files)
+                        if(i == file.length())
+                            break;
+
+                    char test_char = files[i][0];
+                    bool test_flag = true;
+                    for(const string & file:files)
+                    {
+                        if(test_char != file[i])
+                        {
+                            test_flag = false;
+                            break;
+                        }
+                    }
+                    if(test_flag)
+                        common_prefix += test_char;
+                    else
+                        break;
+                }
+
+                // [TODO]
+                if(common_prefix.length() == 0) // case 6.1.1, 6.2
+                {
+                }
+                else // case 6.1.2, 6.3
+                {
+                    reprintCmd();
+                    string insert_str = common_prefix;
+                    insert_str = insert_str.substr(rest_str.length());
+                    insert_str += " ";
+                    for(size_t i = 0;i < insert_str.length();i++)
+                        insertChar(insert_str[i]);
+                    return;
+                }
+            }
+        }
+        // case 5
+        else
+        {
+            last_str = str;
+            last_tabcount = _tabPressCount;
+            e->usage(cout);
+            reprintCmd();
+            return;
+        }
     }
     else // case 7
     {

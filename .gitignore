@@ -12,7 +12,6 @@ hw2/testAsc
 hw2/testAsc.o
 
 # hw3
-hw3/bin/
 hw3/lib/libcmd.a
 hw3/lib/libdb.a
 hw3/lib/libutil.a
