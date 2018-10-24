@@ -323,11 +323,10 @@ CmdParser::parseCmd(string& option)
 void
 CmdParser::listCmd(const string& str)
 {
-    cout << "\n";
-
     // case 1
     if(str.find_first_not_of(' ') == string::npos)
     {
+        cout << "\n";
         size_t count = 0;
         for(auto it = _cmdMap.begin(); it != _cmdMap.end(); it++)
         {
@@ -345,7 +344,7 @@ CmdParser::listCmd(const string& str)
     // remove lead blank
     lead_str = lead_str.substr(lead_str.find_first_not_of(' '));
 
-    // case 2, 3, 4
+    // case 2, 3, 4 (no blank found(except beginning of string))
     if(lead_str.find(' ') == ::string::npos)
     {
         CmdMap match_cmd;
@@ -354,15 +353,13 @@ CmdParser::listCmd(const string& str)
             if(!myStrNCmp(it->first + it->second->getOptCmd(), lead_str, 1))
                 match_cmd.insert(*it);
         }
-        if(match_cmd.size() == 0) // case 4
+        if(match_cmd.size() == 0) // case 4 (no match cmd)
         {
             mybeep();
-            reprintCmd();
             return;
         }
-        else if(match_cmd.size() == 1) // case 3
+        else if(match_cmd.size() == 1) // case 3 (match only one cmd)
         {
-            reprintCmd();
             string insert_str = match_cmd.begin()->first + match_cmd.begin()->second->getOptCmd();
             insert_str = insert_str.substr(lead_str.length());
             insert_str += " ";
@@ -370,8 +367,9 @@ CmdParser::listCmd(const string& str)
                 insertChar(insert_str[i]);
             return;
         }
-        else // case 2
+        else // case 2 (match multi cmd)
         {
+            cout << "\n";
             size_t count = 0;
             for(auto it = match_cmd.begin(); it != match_cmd.end(); it++)
             {
@@ -396,11 +394,20 @@ CmdParser::listCmd(const string& str)
     // case 5, 6
     if(e != 0)
     {
-        static string last_str = "";
+        static CmdExec * last_cmd = 0;
         static size_t last_tabcount;
 
-        // case 6
-        if(last_str == str && last_tabcount + 1 == _tabPressCount)
+        // case 5 (cmd found & pressing “tab” for the first time)
+        if(last_cmd != e || last_tabcount + 1 != _tabPressCount)
+        {
+            cout << "\n";
+            last_cmd = e;
+            last_tabcount = _tabPressCount;
+            e->usage(cout);
+            reprintCmd();
+            return;
+        }
+        else // case 6
         {
             last_tabcount = _tabPressCount;
             rest_str = rest_str.substr(rest_str.find_last_of(' ') + 1);
@@ -408,15 +415,32 @@ CmdParser::listCmd(const string& str)
             if(listDir(files, rest_str, "."))
                 cerr << "Error: listDir sth wrong!\n";
 
-            if(files.size() == 0) // case 6.5
+            if(files.size() == 0) // case 6.5 (no file match)
             {
                 mybeep();
-                reprintCmd();
                 return;
             }
-            else if(files.size() == 1) // case 6.1.3, 6.4
+            else if(files.size() == 1) // case 6.1.3, 6.4 (only one file match)
             {
-                reprintCmd();
+                // [TODO] issue: some strange bug at type:dbav[tab][tab][tab][home] [end][tab][tab]
+                if(rest_str.length() == 0) // case 6.1.3 one file in dir. check if it had printed same file before
+                {
+                    static string last_filename_for_6_1_3 = "";
+                    string end_word_of_str = str.substr(str.find_first_not_of(' '), str.find_last_not_of(' ') + 1);
+                    //clog << "\n%" << str << "%\n";
+                    //clog << "%" << end_word_of_str << "%\n";
+                    //clog << "%" << last_filename_for_6_1_3 << "%\n";
+                    if(end_word_of_str.find(' ') != ::string::npos)
+                    {
+                        end_word_of_str = end_word_of_str.substr(end_word_of_str.find_last_of(' ') + 1);
+                        if(last_filename_for_6_1_3 == end_word_of_str)
+                        {
+                            mybeep();
+                            return;
+                        }
+                    }
+                    last_filename_for_6_1_3 = files[0];
+                }
                 string insert_str = files[0];
                 insert_str = insert_str.substr(rest_str.length());
                 insert_str += " ";
@@ -424,17 +448,17 @@ CmdParser::listCmd(const string& str)
                     insertChar(insert_str[i]);
                 return;
             }
-            else // case 6.1.1, 6.1.2, 6.2, 6.3
+            else // case 6.1.1, 6.1.2, 6.2, 6.3 (multi file found)
             {
-                // [TODO] need better algorithm
+                // [TODO] need better algorithm to find common prefix
                 string common_prefix = "";
                 for(size_t i = 0;;i++)
                 {
-                    for(const string & file:files)
-                        if(i == file.length())
+                    for(const string & filename: files)
+                        if(i == filename.length())
                             break;
 
-                    char test_char = files[i][0];
+                    char test_char = files[0][i];
                     bool test_flag = true;
                     for(const string & file:files)
                     {
@@ -450,39 +474,38 @@ CmdParser::listCmd(const string& str)
                         break;
                 }
 
-                // [TODO]
-                if(common_prefix.length() == 0) // case 6.1.1, 6.2
+                if(common_prefix.length() - rest_str.length() == 0) // case 6.1.1, 6.2 (multi file has no common prefix)
                 {
-                }
-                else // case 6.1.2, 6.3
-                {
+                    cout << "\n";
+                    size_t count = 0;
+                    for(const string & filename: files)
+                    {
+                        if(count && !(count % 5))
+                            cout << "\n";
+                        count++;
+
+                        cout << setw(16) << left << filename;
+                    }
                     reprintCmd();
+                    return;
+                }
+                else // case 6.1.2, 6.3 (multi file has common prefix)
+                {
+                    mybeep();
                     string insert_str = common_prefix;
                     insert_str = insert_str.substr(rest_str.length());
-                    insert_str += " ";
                     for(size_t i = 0;i < insert_str.length();i++)
                         insertChar(insert_str[i]);
                     return;
                 }
             }
         }
-        // case 5
-        else
-        {
-            last_str = str;
-            last_tabcount = _tabPressCount;
-            e->usage(cout);
-            reprintCmd();
-            return;
-        }
     }
-    else // case 7
+    else // case 7 (cmd not found but the cursor is not on the cmd)
     {
         mybeep();
-        reprintCmd();
         return;
     }
-
 }
 
 // cmd is a copy of the original input

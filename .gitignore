@@ -12,6 +12,8 @@ hw2/testAsc
 hw2/testAsc.o
 
 # hw3
+hw3/bin/mydb
+hw3/bin/testdb
 hw3/lib/libcmd.a
 hw3/lib/libdb.a
 hw3/lib/libutil.a
