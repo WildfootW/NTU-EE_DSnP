@@ -104,7 +104,8 @@ DBJson::add(const DBJsonElem& elm)
 {
     if(!isValidVarName(elm.key()))
     {
-        cerr << elm << " is not valid. skip...\n";
+        //cerr << elm << " is not valid. skip...\n";
+        cerr << "Error: Illegal option !! (" << elm.key() << ")\n";
         return false;
     }
 
