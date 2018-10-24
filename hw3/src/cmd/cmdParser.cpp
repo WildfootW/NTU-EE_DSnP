@@ -325,7 +325,6 @@ CmdParser::listCmd(const string& str)
 {
     cout << "\n";
 
-    string lead_str = str;
     // case 1
     if(str.find_first_not_of(' ') == string::npos)
     {
@@ -342,6 +341,7 @@ CmdParser::listCmd(const string& str)
         return;
     }
 
+    string lead_str = str, rest_str;
     // remove lead blank
     lead_str = lead_str.substr(lead_str.find_first_not_of(' '));
 
@@ -365,7 +365,9 @@ CmdParser::listCmd(const string& str)
             reprintCmd();
             string insert_str = match_cmd.begin()->first + match_cmd.begin()->second->getOptCmd();
             insert_str = insert_str.substr(lead_str.length());
-            cout << insert_str;
+            insert_str += " ";
+            for(size_t i = 0;i < insert_str.length();i++)
+                insertChar(insert_str[i]);
             return;
         }
         else // case 2
@@ -382,7 +384,30 @@ CmdParser::listCmd(const string& str)
             return;
         }
     }
-    // case 5, 6, 7 [TODO]
+    // case 5, 6, 7
+    // split by ' '
+    rest_str = lead_str.substr(lead_str.find(' ') + 1);
+    lead_str = lead_str.substr(0, lead_str.find(' '));
+
+    CmdExec * e;
+    e = getCmd(lead_str);
+    // case 5, 6
+    if(e != 0)
+    {
+        // case 5
+        e->usage(cout);
+        reprintCmd();
+        return;
+
+        // case 6 [TODO]
+    }
+    else // case 7
+    {
+        mybeep();
+        reprintCmd();
+        return;
+    }
+
 }
 
 // cmd is a copy of the original input
