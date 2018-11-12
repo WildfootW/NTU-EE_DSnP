@@ -60,14 +60,14 @@ MTResetCmd::exec(const string& option)
 
 void
 MTResetCmd::usage(ostream& os) const
-{  
+{
    os << "Usage: MTReset [(size_t blockSize)]" << endl;
 }
 
 void
 MTResetCmd::help() const
-{  
-   cout << setw(15) << left << "MTReset: " 
+{
+   cout << setw(15) << left << "MTReset: "
         << "(memory test) reset memory manager" << endl;
 }
 
@@ -86,14 +86,14 @@ MTNewCmd::exec(const string& option)
 
 void
 MTNewCmd::usage(ostream& os) const
-{  
+{
    os << "Usage: MTNew <(size_t numObjects)> [-Array (size_t arraySize)]\n";
 }
 
 void
 MTNewCmd::help() const
-{  
-   cout << setw(15) << left << "MTNew: " 
+{
+   cout << setw(15) << left << "MTNew: "
         << "(memory test) new objects" << endl;
 }
 
@@ -111,15 +111,15 @@ MTDeleteCmd::exec(const string& option)
 
 void
 MTDeleteCmd::usage(ostream& os) const
-{  
+{
    os << "Usage: MTDelete <-Index (size_t objId) | "
       << "-Random (size_t numRandId)> [-Array]" << endl;
 }
 
 void
 MTDeleteCmd::help() const
-{  
-   cout << setw(15) << left << "MTDelete: " 
+{
+   cout << setw(15) << left << "MTDelete: "
         << "(memory test) delete objects" << endl;
 }
 
@@ -140,14 +140,14 @@ MTPrintCmd::exec(const string& option)
 
 void
 MTPrintCmd::usage(ostream& os) const
-{  
+{
    os << "Usage: MTPrint" << endl;
 }
 
 void
 MTPrintCmd::help() const
-{  
-   cout << setw(15) << left << "MTPrint: " 
+{
+   cout << setw(15) << left << "MTPrint: "
         << "(memory test) print memory manager info" << endl;
 }
 
