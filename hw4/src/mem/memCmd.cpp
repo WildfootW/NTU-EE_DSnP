@@ -78,10 +78,54 @@ MTResetCmd::help() const
 CmdExecStatus
 MTNewCmd::exec(const string& option)
 {
-   // TODO
+    vector<string> tokens;
+    if(!CmdExec::lexOptions(option, tokens, 0))
+        return CMD_EXEC_ERROR;
 
-   // Use try-catch to catch the bad_alloc exception
-   return CMD_EXEC_DONE;
+    int obj_num = -1, arr_size = -1, _tmp_int;
+
+    for(size_t i = 0;i < tokens.size();++i)
+    {
+        if(myStrNCmp("-Array", tokens[i], 2) == 0)
+        {
+            if(arr_size != -1)
+                return CmdExec::errorOption(CMD_OPT_EXTRA, tokens[i]);
+            if(i == tokens.size() - 1)
+                return CmdExec::errorOption(CMD_OPT_MISSING, tokens[i]);
+            if(!myStr2Int(tokens[i + 1], _tmp_int) || _tmp_int <= 0)
+                return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[i + 1]);
+            arr_size = _tmp_int;
+            ++i;
+            continue;
+        }
+        else if(myStr2Int(tokens[i], _tmp_int) && _tmp_int > 0)
+        {
+            if(obj_num != -1)
+                return CmdExec::errorOption(CMD_OPT_EXTRA, tokens[i]);
+            obj_num = _tmp_int;
+            continue;
+        }
+        else
+        {
+            return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[i]);
+        }
+    }
+    if(obj_num == -1)
+        return CmdExec::errorOption(CMD_OPT_MISSING, "");
+
+    // Use try-catch to catch the bad_alloc exception
+    try
+    {
+        if(arr_size != -1)
+            mtest.newArrs(obj_num, arr_size);
+        else
+            mtest.newObjs(obj_num);
+    }
+    catch(bad_alloc)
+    {
+        return CMD_EXEC_ERROR;
+    }
+    return CMD_EXEC_DONE;
 }
 
 void
@@ -104,9 +148,9 @@ MTNewCmd::help() const
 CmdExecStatus
 MTDeleteCmd::exec(const string& option)
 {
-   // TODO
+    // TODO
 
-   return CMD_EXEC_DONE;
+    return CMD_EXEC_DONE;
 }
 
 void

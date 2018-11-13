@@ -1,0 +1,11 @@
+MTNew -Array 5
+MTNew -Array 1 2 3
+MTNew -Array 1 2 -Array
+MTNew -Array 1 -Array 2
+MTNew 0
+MTNew WF
+MTNew 7 12 54
+MTNew 10 -Array 0
+MTNew -Array
+MTNew 7 -Array
+
