@@ -123,28 +123,43 @@ class MemRecycleList
    size_t getArrSize() const { return _arrSize; }
    MemRecycleList<T>* getNextList() const { return _nextList; }
    void setNextList(MemRecycleList<T>* l) { _nextList = l; }
-   // pop out the first element in the recycle list
-   T* popFront() {
-      // TODO
-      return 0;
-   }
-   // push the element 'p' to the beginning of the recycle list
-   void  pushFront(T* p) {
-      // TODO
-   }
-   // Release the memory occupied by the recycle list(s)
-   // DO NOT release the memory occupied by MemMgr/MemBlock
-   void reset() {
-      // TODO
-   }
+    // pop out the first element in the recycle list
+    T* popFront() {
+        T* ret = _first;
+        _first = *ret;
+        return ret;
+    }
+    // push the element 'p' to the beginning of the recycle list
+    void pushFront(T* p) {
+        //*p = _first;
+        //*(size_t *)p = (size_t)_first;
+        *reinterpret_cast<T**>(p) = _first;
+        _first = p;
+    }
+    // Release the memory occupied by the recycle list(s)
+    // DO NOT release the memory occupied by MemMgr/MemBlock
+    void reset() {
+        delete _nextList; // call nextList's destructor(). And the destructor call their reset()
+        _nextList = 0;
 
-   // Helper functions
-   // ----------------
-   // count the number of elements in the recycle list
-   size_t numElm() const {
-      // TODO
-      return 0;
-   }
+        _first = 0;
+    }
+
+    // Helper functions
+    // ----------------
+    // count the number of elements in the recycle list
+    size_t numElm() const {
+        size_t num = 0;
+        T* _test_recycle_data = _first;
+        while(_test_recycle_data != 0)
+        {
+            ++num;
+            //_test_recycle_data = *_test_recycle_data;
+            //_test_recycle_data = (T *)*(size_t *)_test_recycle_data;
+            _test_recycle_data = *reinterpret_cast<T**>(_test_recycle_data);
+        }
+        return num;
+    }
 
    // Data members
    size_t              _arrSize;   // the array size of the recycled data
