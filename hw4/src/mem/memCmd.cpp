@@ -88,7 +88,7 @@ MTNewCmd::exec(const string& option)
     {
         if(myStrNCmp("-Array", tokens[i], 2) == 0)
         {
-            if(arr_size != -1)
+            if(arr_size != -1)  // duplicate
                 return CmdExec::errorOption(CMD_OPT_EXTRA, tokens[i]);
             if(i == tokens.size() - 1)
                 return CmdExec::errorOption(CMD_OPT_MISSING, tokens[i]);
@@ -148,7 +148,99 @@ MTNewCmd::help() const
 CmdExecStatus
 MTDeleteCmd::exec(const string& option)
 {
-    // TODO
+    vector<string> tokens;
+    if(!CmdExec::lexOptions(option, tokens, 0))
+        return CMD_EXEC_ERROR;
+
+    bool _random_flag = false, _index_flag = false, _array_flag = false;
+    int obj_id, randid_num;
+    size_t _random_option_idx, _obj_id_idx; // just for error message
+
+    for(size_t i = 0;i < tokens.size();++i)
+    {
+        if(myStrNCmp("-Index", tokens[i], 2) == 0)
+        {
+            if(_random_flag || _index_flag)  // duplicate
+                return CmdExec::errorOption(CMD_OPT_EXTRA, tokens[i]);
+            if(i == tokens.size() - 1)
+                return CmdExec::errorOption(CMD_OPT_MISSING, tokens[i]);
+            if(!myStr2Int(tokens[i + 1], obj_id) || obj_id < 0)
+                return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[i + 1]);
+            _index_flag = true;
+            _obj_id_idx = i + 1;
+            ++i;
+            continue;
+        }
+        else if(myStrNCmp("-Random", tokens[i], 2) == 0)
+        {
+            if(_random_flag || _index_flag)  // duplicate
+                return CmdExec::errorOption(CMD_OPT_EXTRA, tokens[i]);
+            if(i == tokens.size() - 1)
+                return CmdExec::errorOption(CMD_OPT_MISSING, tokens[i]);
+            if(!myStr2Int(tokens[i + 1], randid_num) || randid_num <= 0)
+                return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[i + 1]);
+            _random_flag = true;
+            _random_option_idx = i;
+            ++i;
+            continue;
+        }
+        else if(myStrNCmp("-Array", tokens[i], 2) == 0)
+        {
+            if(_array_flag)  // duplicate
+                return CmdExec::errorOption(CMD_OPT_EXTRA, tokens[i]);
+            _array_flag = true;
+            continue;
+        }
+        else
+        {
+            return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[i]);
+        }
+    }
+    if(!(_random_flag || _index_flag))
+        return CmdExec::errorOption(CMD_OPT_MISSING, "");
+    if(_index_flag) // check if obj_id is out of range
+    {
+        if(_array_flag && mtest.getArrListSize() <= (size_t)obj_id)
+        {
+            cerr << "Size of array list (" << mtest.getArrListSize() << ") is <= " << obj_id << "!!\n";
+            return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[_obj_id_idx]);
+        }
+        if(!_array_flag && mtest.getObjListSize() <= (size_t)obj_id)
+        {
+            cerr << "Size of object list (" << mtest.getObjListSize() << ") is <= " << obj_id << "!!\n";
+            return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[_obj_id_idx]);
+        }
+    }
+    if(_random_flag) // check if ObjListSize or ArrListSize is 0
+    {
+        if(_array_flag && mtest.getArrListSize() == 0)
+        {
+            cerr << "Size of array list is 0!!\n";
+            return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[_random_option_idx]);
+        }
+        if(!_array_flag && mtest.getObjListSize() == 0)
+        {
+            cerr << "Size of object list is 0!!\n";
+            return CmdExec::errorOption(CMD_OPT_ILLEGAL, tokens[_random_option_idx]);
+        }
+    }
+    // run
+    if(_index_flag)
+    {
+        if(_array_flag)
+            mtest.deleteArr(obj_id);
+        else
+            mtest.deleteObj(obj_id);
+    }
+    else if(_random_flag)
+    {
+        if(_array_flag)
+            for(int i = 0;i < randid_num;++i)
+                mtest.deleteArr((size_t)rnGen(mtest.getArrListSize()));
+        else
+            for(int i = 0;i < randid_num;++i)
+                mtest.deleteObj((size_t)rnGen(mtest.getObjListSize()));
+    }
 
     return CMD_EXEC_DONE;
 }

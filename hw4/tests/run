@@ -26,3 +26,9 @@ echo "###########"
 echo "#   do5   #"
 echo "###########"
 ../memTest -f do5
+echo
+echo
+echo "###########"
+echo "#   do5   #"
+echo "###########"
+../memTest -f do6
