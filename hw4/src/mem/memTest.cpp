@@ -10,7 +10,7 @@
 using namespace std;
 
 #ifdef MEM_MGR_H
-MEM_MGR_INIT(MemTestObj);
+MEM_MGR_INIT(MemTestObj);   // initialize static data member
 #endif // MEM_MGR_H
 
 MemTest mtest;

@@ -43,8 +43,7 @@ private:                                                                    \
 #define SIZE_T      sizeof(size_t)
 #define SIZE_T_1    (sizeof(size_t) - 1)
 
-// TODO: Define them by SIZE_T and/or SIZE_T_1 MACROs.
-//
+// Define them by SIZE_T and/or SIZE_T_1 MACROs.
 // To promote 't' to the nearest multiple of SIZE_T;
 // e.g. Let SIZE_T = 8;  toSizeT(7) = 8, toSizeT(12) = 16
 #define toSizeT(t)      (!(t % SIZE_T) ? t : t - t % SIZE_T + SIZE_T)
@@ -82,17 +81,22 @@ class MemBlock
 
    // Member functions
    void reset() { _ptr = _begin; }
-   // 1. Get (at least) 't' bytes memory from current block
-   //    Promote 't' to a multiple of SIZE_T
-   // 2. Update "_ptr" accordingly
-   // 3. The return memory address is stored in "ret"
-   // 4. Return false if not enough memory
-   bool getMem(size_t t, T*& ret) {
-      // TODO
-      return true;
-   }
+    // 1. Get (at least) 't' bytes memory from current block
+    //    Promote 't' to a multiple of SIZE_T
+    // 2. Update "_ptr" accordingly
+    // 3. The return memory address is stored in "ret"
+    // 4. Return false if not enough memory
+    bool getMem(size_t t, T*& ret) {
+        t = toSizeT(t);
+        ret = (T*)_ptr;         // need return _ptr as well while RemainSize is not enough (for recyclic)
+        if(t > getRemainSize()) // not enough memory
+            return false;
+        _ptr += t;
+        return true;
+    }
+
    size_t getRemainSize() const { return size_t(_end - _ptr); }
-      
+
    MemBlock<T>* getNextBlock() const { return _nextBlock; }
 
    // Data members
@@ -170,13 +174,15 @@ public:
    // 3. 'b' is the new _blockSize; "b = 0" means _blockSize does not change
    //    if (b != _blockSize) reallocate the memory for the first MemBlock
    // 4. Update the _activeBlock pointer
-   void reset(size_t b = 0) {
-      assert(b % SIZE_T == 0);
-      #ifdef MEM_DEBUG
-      cout << "Resetting memMgr...(" << b << ")" << endl;
-      #endif // MEM_DEBUG
-      // TODO
-   }
+    void reset(size_t b = 0) {
+        assert(b % SIZE_T == 0);
+        #ifdef MEM_DEBUG
+        cout << "Resetting memMgr...(" << b << ")" << endl;
+        #endif // MEM_DEBUG
+        // TODO
+
+    }
+
    // Called by new
    T* alloc(size_t t) {
       assert(t == S);
@@ -274,58 +280,81 @@ private:
       // TODO
       return 0;
    }
-   // t is the #Bytes requested from new or new[]
-   // Note: Make sure the returned memory is a multiple of SIZE_T
-   T* getMem(size_t t) {
-      T* ret = 0;
-      #ifdef MEM_DEBUG
-      cout << "Calling MemMgr::getMem...(" << t << ")" << endl;
-      #endif // MEM_DEBUG
-      // 1. Make sure to promote t to a multiple of SIZE_T
-      t = toSizeT(t);
-      // 2. Check if the requested memory is greater than the block size.
-      //    If so, throw a "bad_alloc()" exception.
-      //    Print this message for exception
-      //    cerr << "Requested memory (" << t << ") is greater than block size"
-      //         << "(" << _blockSize << "). " << "Exception raised...\n";
-      // TODO
+    // t is the #Bytes requested from new or new[]
+    // Note: Make sure the returned memory is a multiple of SIZE_T
+    T* getMem(size_t t) {
+        T* ret = 0;
+        #ifdef MEM_DEBUG
+        cout << "Calling MemMgr::getMem...(" << t << ")" << endl;
+        #endif // MEM_DEBUG
+        // 1. Make sure to promote t to a multiple of SIZE_T
+        t = toSizeT(t);
+        // 2. Check if the requested memory is greater than the block size.
+        //    If so, throw a "bad_alloc()" exception.
+        //    Print this message for exception
+        if(t > _blockSize)
+        {
+            cerr << "Requested memory (" << t << ") is greater than block size" << "(" << _blockSize << "). " << "Exception raised...\n";
+            throw bad_alloc();
+        }
 
-      // 3. Check the _recycleList first...
-      //    Print this message for memTest.debug
-      //    #ifdef MEM_DEBUG
-      //    cout << "Recycled from _recycleList[" << n << "]..." << ret << endl;
-      //    #endif // MEM_DEBUG
-      //    => 'n' is the size of array
-      //    => "ret" is the return address
-      size_t n = getArraySize(t);
-      // TODO
+        // 3. Check the _recycleList first...
+        //    Print this message for memTest.debug
+        //    #ifdef MEM_DEBUG
+        //    cout << "Recycled from _recycleList[" << n << "]..." << ret << endl;
+        //    #endif // MEM_DEBUG
+        //    => 'n' is the size of array
+        //    => "ret" is the return address
+        size_t n = getArraySize(t);
+        // TODO
 
-      // If no match from recycle list...
-      // 4. Get the memory from _activeBlock
-      // 5. If not enough, recycle the remained memory and print out ---
-      //    Note: recycle to the as biggest array index as possible
-      //    Note: rn is the array size
-      //    Print this message for memTest.debug
-      //    #ifdef MEM_DEBUG
-      //    cout << "Recycling " << ret << " to _recycleList[" << rn << "]\n";
-      //    #endif // MEM_DEBUG
-      //    ==> allocate a new memory block, and print out ---
-      //    #ifdef MEM_DEBUG
-      //    cout << "New MemBlock... " << _activeBlock << endl;
-      //    #endif // MEM_DEBUG
-      // TODO
+        // If no match from recycle list...
+        // 4. Get the memory from _activeBlock
+        // 5. If not enough, recycle the remained memory and print out ---
+        //    Note: recycle to the as biggest array index as possible
+        //    Note: rn is the array size
+        //    Print this message for memTest.debug
+        //    #ifdef MEM_DEBUG
+        //    cout << "Recycling " << ret << " to _recycleList[" << rn << "]\n";
+        //    #endif // MEM_DEBUG
+        //    ==> allocate a new memory block, and print out ---
+        //    #ifdef MEM_DEBUG
+        //    cout << "New MemBlock... " << _activeBlock << endl;
+        //    #endif // MEM_DEBUG
+        if(!_activeBlock->getMem(t, ret))
+        {
+            // recyclic ret TODO
+            #ifdef MEM_DEBUG
+            cout << "Recycling " << ret << " to _recycleList[" << rn << "]\n";
+            #endif // MEM_DEBUG
 
-      // 6. At the end, print out the acquired memory address
-      #ifdef MEM_DEBUG
-      cout << "Memory acquired... " << ret << endl;
-      #endif // MEM_DEBUG
-      return ret;
-   }
-   // Get the currently allocated number of MemBlock's
-   size_t getNumBlocks() const {
-      // TODO
-      return 0;
-   }
+            // allocate a new MemBlock
+            _activeBlock = new MemBlock<T>(_activeBlock, _blockSize);
+            #ifdef MEM_DEBUG
+            cout << "New MemBlock... " << _activeBlock << endl;
+            #endif // MEM_DEBUG
+
+            // get memory from new memoryblock (it should not failed)
+            assert(_activeBlock->getMem(t, ret));
+        }
+
+        // 6. At the end, print out the acquired memory address
+        #ifdef MEM_DEBUG
+        cout << "Memory acquired... " << ret << endl;
+        #endif // MEM_DEBUG
+        return ret;
+    }
+    // Get the currently allocated number of MemBlock's
+    size_t getNumBlocks() const {
+        size_t num = 1;
+        MemBlock<T> * _testBlock = _activeBlock;
+        while(_testBlock->_nextBlock != 0)  // first block store null in _nextBlock
+        {
+            ++num;
+            _testBlock = _testBlock->_nextBlock;
+        }
+        return num;
+    }
 
 };
 
