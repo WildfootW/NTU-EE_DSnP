@@ -2,6 +2,11 @@ a.out
 *.swp
 b07611012*
 
+# hw1
+hw1/p2/p2Json.o
+hw1/p2/p2Main.o
+hw1/p2/p2Run
+
 # hw2
 hw2/cmdCharDef.o
 hw2/cmdReader
@@ -27,4 +32,15 @@ hw3/src/test/test.o
 hw3/src/util/myGetChar.o
 hw3/src/util/myString.o
 hw3/src/util/util.o
+
+# hw4
+hw4/lib/libmem.a
+hw4/lib/libutil.a
+hw4/lib/libcmd.a
+hw4/src/main/main.o
+hw4/src/mem/memCmd.o
+hw4/src/mem/memTest.o
+hw4/src/util/myGetChar.o
+hw4/src/util/myString.o
+hw4/src/util/util.o
 
