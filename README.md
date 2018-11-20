@@ -11,3 +11,5 @@ cd ./hw1
 put b07611012_hw1_v1.tgz
 exit
 ```
+
+hw1, 2, 3 is work on linux 16, the other is work on linux 18
