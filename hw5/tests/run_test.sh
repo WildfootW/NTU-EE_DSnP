@@ -23,7 +23,8 @@ fi
 
 my_adttest="../adtTest.$1"
 ref_adttest="../ref/adtTest.$1"
-dofiles="do1 do2 do3 do4 do5 mydo"
+#dofiles="do1 do2 do3 do4 do5"
+dofiles="mydo1 mydo2 mydo3"
 
 echo "" > diff_result
 for dofile in `echo $dofiles | tr ' ' '\n'`; do
