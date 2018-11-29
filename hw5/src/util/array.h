@@ -20,8 +20,7 @@ template <class T>
 class Array
 {
 public:
-   // TODO: decide the initial value for _isSorted
-   Array() : _data(0), _size(0), _capacity(0) {}
+   Array() : _data(0), _size(0), _capacity(0), _isSorted(true) {}
    ~Array() { delete []_data; }
 
    // DO NOT add any more data member or function for class iterator
@@ -76,12 +75,7 @@ public:
        _data[_size++] = x;
    }
    void pop_front() {
-       if(empty())
-           return;
-
-       // won't keep order
-       _isSorted = false;
-       _data[0] = _data[--_size];
+       erase(iterator(_data));
    }
    void pop_back() {
        if(empty())
