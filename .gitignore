@@ -1,6 +1,8 @@
 a.out
 *.swp
 b07611012*
+autotest*
+diff_result
 
 # hw1
 hw1/p2/p2Json.o
