@@ -50,7 +50,7 @@ public:
       friend class DList;
 
    public:
-      iterator(DListNode<T>* n= 0): _node(n) {}
+      iterator(DListNode<T>* n = 0): _node(n) {}
       iterator(const iterator& i) : _node(i._node) {}
       ~iterator() {} // Should NOT delete _node
 
@@ -85,17 +85,9 @@ public:
       DListNode<T>* _node;
    };
 
-   iterator begin() const {
-//       if(empty())
-//           return NULL;
-       return end() + 1;
-   }
-   iterator end() const { return iterator(_head); }
-   iterator back() const {
-//       if(empty())
-//           return NULL;
-       return end() - 1;
-   }
+   iterator begin() const { return end() + 1; }
+   iterator end()   const { return iterator(_head); }
+   iterator back()  const { return end() - 1; }
 
    bool empty() const { return (_head == _head->_next); }
    size_t size() const {
@@ -162,8 +154,8 @@ public:
 
 private:
    // [NOTE] DO NOT ADD or REMOVE any data member
-   DListNode<T>*  _head;     // = dummy node if list is empty
-   mutable bool   _isSorted; // (optionally) to indicate the array is sorted
+   DListNode<T>*  _head;     // dummy node
+   mutable bool   _isSorted; // to indicate the array is sorted
 
     bool check_lhs_less_rhs(iterator lhs, iterator rhs)
     {

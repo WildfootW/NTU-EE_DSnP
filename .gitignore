@@ -46,3 +46,15 @@ hw4/src/util/myGetChar.o
 hw4/src/util/myString.o
 hw4/src/util/util.o
 
+# hw5
+hw5/bin/adtTest.array
+hw5/bin/adtTest.bst
+hw5/bin/adtTest.dlist
+hw5/lib/libutil.a
+hw5/src/util/myGetChar.o
+hw5/src/util/myString.o
+hw5/src/util/util.o
+hw5/src/main/adtTest.o
+hw5/src/main/main.o
+
+
