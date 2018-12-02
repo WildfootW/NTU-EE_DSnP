@@ -1,15 +1,1 @@
-adta -r 20
-adtp
-adtd -front 3
-adtp
-adtd -back 1
-adtp
-adtd -back 1
-adtp
-adtd -back 1
-adtp
-adtd -back 1
-adtp
-adtd -back 1
-adtp
 q -f
