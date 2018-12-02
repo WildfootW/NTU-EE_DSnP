@@ -253,7 +253,7 @@ public:
     }
 
     void sort() const {  }
-    void print() const {  }
+    void print() const {  } // print -v
 private:
     BSTreeNode<T>*  _maximum;   // dummy node
     void clear_dfs(BSTreeNode<T>* node)

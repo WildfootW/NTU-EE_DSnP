@@ -1,23 +1,23 @@
 # adtComp
 ## 資料結構的實作
 ### Dynamic Array
-用一段連續的記憶體存放資料，並在空間不夠時自動擴展。  
-`_data`存放其開頭位址;`_size`紀錄目前有多少(個)資料存放在其中;`_capacity`儲存目前new了多少記憶體來放資料(個);`isSorted`在呼叫`sort()`後被設成`true`，並在`erase()`、`push_back()`等操作後被設為`false`。  
-一開始的`_capacity`為0，而每次`push_back()`但空間不夠時自動擴展`_size + 1`的空間(總共為`_size * 2 + 1`)。  
-`end()`會回傳最後一個有效資料的後一個位置。  
-`erase()`會直接把最後一個資料複製到要刪除的資料的位置，並把`_size` - 1。  
-`clear()`僅把`_size`設為0。  
-`sort()`使用STL中的`sort()`。  
+用一段連續的記憶體存放資料，並在空間不夠時自動擴展。 
+`_data`存放其開頭位址;`_size`紀錄目前有多少(個)資料存放在其中;`_capacity`儲存目前new了多少記憶體來放資料(個);`isSorted`在呼叫`sort()`後被設成`true`，並在`erase()`、`push_back()`等操作後被設為`false`。 
+一開始的`_capacity`為0，而每次`push_back()`但空間不夠時自動擴展`_size + 1`的空間(總共為`_size * 2 + 1`)。 
+`end()`會回傳最後一個有效資料的後一個位置。 
+`erase()`會直接把最後一個資料複製到要刪除的資料的位置，並把`_size` - 1。 
+`clear()`僅把`_size`設為0。 
+`sort()`使用STL中的`sort()`。 
 
 ### Double link list
-一串不連續的記憶體，資料存在每個`node`中，每個`node`都會指向前一個和後一個`node`。  
-`_head`指向一個`dummy node`，這個`node`將這個list串成一個環，所以dummy的前一個為`back()`，而後一個則是`begin()`。  
-`iterator`指向`node`，而`iterator`operator`+` `-`的實作則需要一個一個往前或往後。  
-`sort()`因為不能直接指到指定的node，所以使用氣泡排序，並實作`swap_node()`以更改node的`_prev` `_next`交換node。  
+一串不連續的記憶體，資料存在每個`node`中，每個`node`都會指向前一個和後一個`node`。 
+`_head`指向一個`dummy node`，這個`node`將這個list串成一個環，所以dummy的前一個為`back()`，而後一個則是`begin()`。 
+`iterator`指向`node`，而`iterator`operator`+` `-`的實作則需要一個一個往前或往後。 
+`sort()`因為不能直接指到指定的node，所以使用氣泡排序，並實作`swap_node()`以更改node的`_prev` `_next`交換node。 
 
 ### Binary search tree
-一顆二元樹，左子端點永遠小於或等於父親，右子端點則永遠大於父親。  
-找某點的次大端點(++iterator)：如果有右子端點，先向右子端點走一步再向左子端點走到底，如果沒有右子端點則向左父親走到底再向右父親走一步。如果是最大的端點則回傳`NULL`
+一顆二元樹，左子端點永遠小於或等於父親，右子端點則永遠大於父親。 
+找某點的次大端點(++iterator)：如果有右子端點，先向右子端點走一步再向左子端點走到底，如果沒有右子端點則向左父親走到底再向右父親走一步。如果是最大的端點則回傳`NULL` 
 
 ## 實驗
 ```
