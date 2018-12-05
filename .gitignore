@@ -3,6 +3,7 @@ a.out
 b07611012*
 autotest*
 diff_result
+*/SelfCheck
 
 # hw1
 hw1/p2/p2Json.o
@@ -63,5 +64,15 @@ hw5/include/myUsage.h
 hw5/include/rnGen.h
 hw5/include/util.h
 
-
+# hw6
+hw6/bin/cirTest
+hw6/lib/libcir.a
+hw6/lib/libutil.a
+hw6/src/cir/cirCmd.o
+hw6/src/cir/cirGate.o
+hw6/src/cir/cirMgr.o
+hw6/src/main/main.o
+hw6/src/util/myGetChar.o
+hw6/src/util/myString.o
+hw6/src/util/util.o
 
