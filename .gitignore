@@ -56,5 +56,12 @@ hw5/src/util/myString.o
 hw5/src/util/util.o
 hw5/src/main/adtTest.o
 hw5/src/main/main.o
+hw5/include/array.h
+hw5/include/bst.h
+hw5/include/dlist.h
+hw5/include/myUsage.h
+hw5/include/rnGen.h
+hw5/include/util.h
+
 
 
