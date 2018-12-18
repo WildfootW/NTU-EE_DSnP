@@ -1,0 +1,6 @@
+CIRR tests_aag.fraig/my_test1.aag
+CIRP
+CIRP -N
+CIRP -PI
+CIRP -PO
+q -f

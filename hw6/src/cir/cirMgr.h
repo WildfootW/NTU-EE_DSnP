@@ -50,13 +50,16 @@ private:
     unsigned int _header_L;
     unsigned int _header_O;
     unsigned int _header_A;
+    unsigned int _new_header_A; // for write, look at spec. it will be calc at confirm_circuit()
     CirGate* _dummy_udf_gate;
     IdList _pi_list;
     IdList _po_list;
-    //IDList _latch_list;
-
+    //IdList _latch_list;
+    IdList _float_fanin_list;
+    IdList _not_used_list;
 
     // Help function for read
+    bool confirm_circuit(); // find floating, complete o_gate_list...
     bool read_symbol_parser(string input, CirGate*& target, string& symbolic_name) const;
     bool read_interger_parser(string input, vector<int>& tokens, unsigned int number_num) const;
     bool read_header_parser(const string& input, vector<int>& tokens) const;

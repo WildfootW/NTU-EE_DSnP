@@ -19,11 +19,23 @@ using namespace std;
 
 extern CirMgr *cirMgr;
 
-// TODO: Implement memeber functions for class(es) in cirGate.h
-
+unsigned int CirGate::visited_ref = 0;
 /**************************************/
 /*   class CirGate member functions   */
 /**************************************/
+void
+CirGate::print_net_dfs(unsigned int& print_line_no) const
+{
+    if(is_visited())
+        return;
+    set_visited();
+
+    for(const related_gate& e:_i_gate_list)
+    {
+        e.get_gate()->print_net_dfs(print_line_no);
+    }
+    print_net(print_line_no);
+}
 void
 CirGate::reportGate() const
 {
@@ -51,5 +63,37 @@ void
 CirGate::reportFanout(int level) const
 {
    assert (level >= 0);
+}
+
+void
+CirGate::update_inputs_output_list(const related_gate& myself) const
+{
+    for(const related_gate& e:_i_gate_list)
+    {
+        //if(e.get_gate()->gate_type() == UNDEF_GATE)
+        //    continue;
+        e.get_gate()->add_output_gate(myself);
+    }
+}
+
+//void
+//CirGate::set_floating()
+//{
+//    floating = true;
+//    for(related_gate& e:_o_gate_list)
+//    {
+//        if(e.get_gate()->is_floating() == false)
+//            e.get_gate()->set_floating();
+//    }
+//}
+bool
+CirGate::have_floating_fanin() const
+{
+    for(const related_gate& e:_i_gate_list)
+    {
+        if(e.get_gate()->is_floating())
+            return true;
+    }
+    return false;
 }
 

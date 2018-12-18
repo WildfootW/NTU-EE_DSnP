@@ -157,12 +157,17 @@ CirGate* CirMgr::getGate(unsigned gid) const
 /**************************************************************/
 /*   class CirMgr member functions for circuit construction   */
 /**************************************************************/
-CirMgr::CirMgr()
+CirMgr::CirMgr(): _new_header_A(0)
 {
     _dummy_udf_gate = new UNDEFGate;
 }
 CirMgr::~CirMgr()
 {
+    for(size_t i = 0;i < _gate_list.size();++i)
+    {
+        if(_gate_list[i] != _dummy_udf_gate)
+            delete _gate_list[i];
+    }
     delete _dummy_udf_gate;
 }
 bool
@@ -181,7 +186,7 @@ CirMgr::readCircuit(const string& fileName)
     unsigned int line_no = 0;
 
     // header
-    clog << "READ HEADER" << endl;
+    //clog << "READ HEADER" << endl;
     getline(aag_file, input_line);
     if(!read_header_parser(input_line, tokens)) // TODO error
     {
@@ -191,7 +196,7 @@ CirMgr::readCircuit(const string& fileName)
     set_header(tokens);
 
     // Inputs
-    clog << "READ INPUTS" << endl;
+    //clog << "READ INPUTS" << endl;
     for(unsigned int i = 0;i < _header_I;++i)
     {
         tokens.clear();
@@ -208,7 +213,7 @@ CirMgr::readCircuit(const string& fileName)
     // no implement
 
     // Outputs
-    clog << "READ OUTPUTS" << endl;
+    //clog << "READ OUTPUTS" << endl;
     for(unsigned int i = 0;i < _header_O;++i)
     {
         tokens.clear();
@@ -223,7 +228,7 @@ CirMgr::readCircuit(const string& fileName)
     }
 
     // ANDs
-    clog << "READ ANDS" << endl;
+    //clog << "READ ANDS" << endl;
     for(unsigned int i = 0;i < _header_A;++i)
     {
         tokens.clear();
@@ -255,6 +260,7 @@ CirMgr::readCircuit(const string& fileName)
     }
 
     aag_file.close();
+    confirm_circuit();
     return true;
 }
 
@@ -273,37 +279,67 @@ Circuit Statistics
 void
 CirMgr::printSummary() const
 {
-    for(size_t i = 0;i < _gate_list.size();++i)
-    {
-        cout << i << ": ";
-        _gate_list[i]->printGate();
-    }
-    cout << "Comments: " << endl;
-    cout << comments << endl;
+    cout << endl;
+    cout << "Circuit Statistics" << endl;
+    cout << "==================" << endl;
+    cout << "  PI   " << setw(9) << right << _header_I << endl;
+    cout << "  PO   " << setw(9) << right << _header_O << endl;
+    cout << "  AIG  " << setw(9) << right << _header_A << endl;
+    cout << "------------------" << endl;
+    cout << "  Total" << setw(9) << right << _header_I + _header_O + _header_A << endl;
+
+// for debug
+//    for(size_t i = 0;i < _gate_list.size();++i)
+//    {
+//        cout << i << ": ";
+//        _gate_list[i]->printGate();
+//    }
+//    cout << "Comments: " << endl;
+//    cout << comments << endl;
 }
 
 void
 CirMgr::printNetlist() const
 {
+    unsigned int print_line_no = 0;
+    CirGate::reset_visited();
+    cout << endl;
+    for(auto e:_po_list)
+    {
+        _gate_list[e]->print_net_dfs(print_line_no);
+    }
 }
 
 void
 CirMgr::printPIs() const
 {
-   cout << "PIs of the circuit:";
-   cout << endl;
+    cout << "PIs of the circuit:";
+    for(auto& e:_pi_list)
+        cout << " " << e;
+    cout << endl;
 }
 
 void
 CirMgr::printPOs() const
 {
-   cout << "POs of the circuit:";
-   cout << endl;
+    cout << "POs of the circuit:";
+    for(auto& e:_po_list)
+        cout << " " << e;
+    cout << endl;
 }
 
 void
 CirMgr::printFloatGates() const
 {
+    cout << "Gates with floating fanin(s):";
+    for(auto& e:_float_fanin_list)
+        cout << " " << e;
+    cout << endl;
+
+    cout << "Gates defined but not used  :";
+    for(auto& e:_not_used_list)
+        cout << " " << e;
+    cout << endl;
 }
 
 void
@@ -312,6 +348,29 @@ CirMgr::writeAag(ostream& outfile) const
 }
 
 // Help function for read
+bool CirMgr::confirm_circuit()
+{
+    for(unsigned int i = 0;i < _gate_list.size();++i)
+    {
+        CirGate::related_gate myself(&_gate_list[i]);
+        _gate_list[i]->update_inputs_output_list(myself);
+    }
+//    for(unsigned int i = 0;i < _gate_list.size();++i)
+//    {
+//        if(_gate_list[i]->is_floating())
+//            _gate_list[i]->set_floating();
+//    }
+    for(unsigned int i = 0;i < _gate_list.size();++i)
+    {
+        if(_gate_list[i]->have_floating_fanin())
+            _float_fanin_list.push_back(i);
+        if(_gate_list[i]->not_used())
+            _not_used_list.push_back(i);
+        if(_gate_list[i]->gate_type() == UNDEF_GATE)
+            _gate_list[i] = new UNDEFGate(i);
+    }
+    return true;
+}
 bool CirMgr::read_symbol_parser(string input, CirGate*& target, string& symbolic_name) const
 {
     stringstream ss(input);
