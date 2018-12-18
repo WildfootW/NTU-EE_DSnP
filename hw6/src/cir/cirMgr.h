@@ -30,7 +30,7 @@ public:
 
     // Access functions
     // return '0' if "gid" corresponds to an undefined gate.
-    CirGate* getGate(unsigned gid) const { return 0; }
+    CirGate* getGate(unsigned gid) const;
 
     // Member functions about circuit construction
     bool readCircuit(const string&);

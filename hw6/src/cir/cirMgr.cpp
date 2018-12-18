@@ -146,6 +146,14 @@ parseError(CirParseError err)
    return false;
 }
 
+/* access */
+CirGate* CirMgr::getGate(unsigned gid) const
+{
+    if(_gate_list[gid]->gate_type() == UNDEF_GATE)
+        return NULL;
+    return _gate_list[gid];
+}
+
 /**************************************************************/
 /*   class CirMgr member functions for circuit construction   */
 /**************************************************************/
@@ -321,7 +329,7 @@ bool CirMgr::read_symbol_parser(string input, CirGate*& target, string& symbolic
     }
 
     ss.get(ch);
-    symbolic_name = ss.str();
+    getline(ss, symbolic_name);
     return true;
 }
 bool CirMgr::read_interger_parser(string input, vector<int>& tokens, unsigned int number_num) const

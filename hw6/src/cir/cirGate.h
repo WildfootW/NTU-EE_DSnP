@@ -138,6 +138,7 @@ public:
         cout << getTypeStr();
         cout << endl;
     }
+
 private:
 };
 
