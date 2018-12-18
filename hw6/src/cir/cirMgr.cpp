@@ -229,7 +229,22 @@ CirMgr::readCircuit(const string& fileName)
     }
 
     // Symbols
+    while(getline(aag_file, input_line) && (input_line[0] == 'i' || input_line[0] == 'o'))
+    {
+        CirGate* target;
+        string symbolic_name;
+        read_symbol_parser(input_line, target, symbolic_name);
+        target->symbolic_name = symbolic_name;
+    }
+
     // Comments
+    if(input_line[0] == 'c' && input_line.size() == 1)
+    {
+        while(getline(aag_file, input_line))
+        {
+            comments.append(input_line + '\n');
+        }
+    }
 
     aag_file.close();
     return true;
@@ -254,8 +269,9 @@ CirMgr::printSummary() const
     {
         cout << i << ": ";
         _gate_list[i]->printGate();
-
     }
+    cout << "Comments: " << endl;
+    cout << comments << endl;
 }
 
 void
@@ -288,6 +304,26 @@ CirMgr::writeAag(ostream& outfile) const
 }
 
 // Help function for read
+bool CirMgr::read_symbol_parser(string input, CirGate*& target, string& symbolic_name) const
+{
+    stringstream ss(input);
+    char ch;
+    unsigned int position;
+    ss.get(ch) >> position;
+
+    if(ch == 'i')
+    {
+        target = _gate_list[_pi_list[position]];
+    }
+    else if(ch == 'o')
+    {
+        target = _gate_list[_po_list[position]];
+    }
+
+    ss.get(ch);
+    symbolic_name = ss.str();
+    return true;
+}
 bool CirMgr::read_interger_parser(string input, vector<int>& tokens, unsigned int number_num) const
 {
     stringstream ss;
@@ -371,6 +407,7 @@ void CirMgr::set_gate(const vector<int>& tokens, GateType type, unsigned int lno
             return;
 
         _gate_list[the_gate_id] = new PIGate(the_gate_id, lno);
+        _pi_list.push_back(the_gate_id);
     }
     else if(type == PO_GATE)
     {
@@ -384,6 +421,7 @@ void CirMgr::set_gate(const vector<int>& tokens, GateType type, unsigned int lno
         src.push_back(CirGate::related_gate(&_gate_list[src_gate_id], src_inverted));
 
         _gate_list[the_gate_id] = new POGate(the_gate_id, lno, src);
+        _po_list.push_back(the_gate_id);
     }
     else if(type == AIG_GATE)
     {

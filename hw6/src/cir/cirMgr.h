@@ -26,6 +26,8 @@ public:
     CirMgr();
     ~CirMgr();
 
+    string comments;
+
     // Access functions
     // return '0' if "gid" corresponds to an undefined gate.
     CirGate* getGate(unsigned gid) const { return 0; }
@@ -41,7 +43,6 @@ public:
     void printFloatGates() const;
     void writeAag(ostream&) const;
 
-
 private:
     GateList _gate_list;
     unsigned int _header_M;
@@ -50,8 +51,13 @@ private:
     unsigned int _header_O;
     unsigned int _header_A;
     CirGate* _dummy_udf_gate;
+    IdList _pi_list;
+    IdList _po_list;
+    //IDList _latch_list;
+
 
     // Help function for read
+    bool read_symbol_parser(string input, CirGate*& target, string& symbolic_name) const;
     bool read_interger_parser(string input, vector<int>& tokens, unsigned int number_num) const;
     bool read_header_parser(const string& input, vector<int>& tokens) const;
     bool read_gate_parser(const string& input, vector<int>& tokens, GateType type) const;
