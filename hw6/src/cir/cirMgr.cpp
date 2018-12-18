@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <cassert>
 #include <cstring>
+#include <sstream>
 #include "cirMgr.h"
 #include "cirGate.h"
 #include "util.h"
@@ -148,10 +149,90 @@ parseError(CirParseError err)
 /**************************************************************/
 /*   class CirMgr member functions for circuit construction   */
 /**************************************************************/
+CirMgr::CirMgr()
+{
+    _dummy_udf_gate = new UNDEFGate;
+}
+CirMgr::~CirMgr()
+{
+    delete _dummy_udf_gate;
+}
 bool
 CirMgr::readCircuit(const string& fileName)
 {
-   return true;
+    ifstream aag_file(fileName);
+    if(!aag_file.is_open())
+    {
+        aag_file.close();
+        cerr << "Cannot open design \"" << fileName << "\"!!" << endl;
+        return false;
+    }
+
+    vector<int> tokens;
+    string input_line;
+    unsigned int line_no = 0;
+
+    // header
+    clog << "READ HEADER" << endl;
+    getline(aag_file, input_line);
+    if(!read_header_parser(input_line, tokens)) // TODO error
+    {
+        return false;
+    }
+    ++line_no;
+    set_header(tokens);
+
+    // Inputs
+    clog << "READ INPUTS" << endl;
+    for(unsigned int i = 0;i < _header_I;++i)
+    {
+        tokens.clear();
+        getline(aag_file, input_line);
+        if(!read_gate_parser(input_line, tokens, PI_GATE)) // TODO error
+        {
+            return false;
+        }
+        ++line_no;
+        set_gate(tokens, PI_GATE, line_no);
+    }
+
+    // Latches
+    // no implement
+
+    // Outputs
+    clog << "READ OUTPUTS" << endl;
+    for(unsigned int i = 0;i < _header_O;++i)
+    {
+        tokens.clear();
+        getline(aag_file, input_line);
+        if(!read_gate_parser(input_line, tokens, PO_GATE)) // TODO error
+        {
+            return false;
+        }
+        ++line_no;
+        tokens.push_back(_header_M + i + 1); // origin output tokens don't know PO's variable ID
+        set_gate(tokens, PO_GATE, line_no);
+    }
+
+    // ANDs
+    clog << "READ ANDS" << endl;
+    for(unsigned int i = 0;i < _header_A;++i)
+    {
+        tokens.clear();
+        getline(aag_file, input_line);
+        if(!read_gate_parser(input_line, tokens, AIG_GATE)) // TODO error
+        {
+            return false;
+        }
+        ++line_no;
+        set_gate(tokens, AIG_GATE, line_no);
+    }
+
+    // Symbols
+    // Comments
+
+    aag_file.close();
+    return true;
 }
 
 /**********************************************************/
@@ -169,6 +250,12 @@ Circuit Statistics
 void
 CirMgr::printSummary() const
 {
+    for(size_t i = 0;i < _gate_list.size();++i)
+    {
+        cout << i << ": ";
+        _gate_list[i]->printGate();
+
+    }
 }
 
 void
@@ -198,4 +285,120 @@ CirMgr::printFloatGates() const
 void
 CirMgr::writeAag(ostream& outfile) const
 {
+}
+
+// Help function for read
+bool CirMgr::read_interger_parser(string input, vector<int>& tokens, unsigned int number_num) const
+{
+    stringstream ss;
+    ss << " " << input;
+    while(!ss.eof())
+    {
+        char ch;
+        int token;
+
+        ss.get(ch);
+        if(ch != ' ') // TODO error
+            return false;
+
+        ss.get(ch);
+        if(ss.eof()) // TODO error addtion space
+            return false;
+        if(!('0' <= ch && ch <= '9')) // TODO error
+            return false;
+        ss.putback(ch);
+
+        ss >> token;
+        //if(!ss.good() && !ss.eof()) // TODO error
+        //    return false;
+        tokens.push_back(token);
+    }
+    if(tokens.size() != number_num) // TODO error
+        return false;
+    return true;
+}
+bool CirMgr::read_header_parser(const string& input, vector<int>& tokens) const
+{
+    // TODO check aag
+    if(!read_interger_parser(input.substr(4), tokens, 5)) // remove aag
+        return false;
+    // TODO check all tokens positive
+    return true;
+}
+bool CirMgr::read_gate_parser(const string& input, vector<int>& tokens, GateType type) const
+{
+    switch(type)
+    {
+        case PI_GATE:
+        case PO_GATE:
+            return read_interger_parser(input, tokens, 1);
+        case AIG_GATE:
+            return read_interger_parser(input, tokens, 3);
+        default:
+            return false;
+    }
+}
+unsigned int CirMgr::literal_to_variable(int literal_id, bool& inverted) const
+{
+    inverted = false;
+    if(literal_id % 2)
+    {
+        inverted = true;
+        --literal_id;
+    }
+    return (literal_id / 2);
+}
+unsigned int CirMgr::literal_to_variable(int literal_id) const
+{
+    return (literal_id / 2);
+}
+void CirMgr::set_header(const vector<int>& tokens)
+{
+    _header_M = tokens[0];
+    _header_I = tokens[1];
+    _header_L = tokens[2];
+    _header_O = tokens[3];
+    _header_A = tokens[4];
+    _gate_list.resize(_header_M + _header_O + 1, _dummy_udf_gate);
+    _gate_list[0] = new CONSTGate;
+}
+void CirMgr::set_gate(const vector<int>& tokens, GateType type, unsigned int lno)
+{
+    if(type == PI_GATE)
+    {
+        unsigned int the_gate_id = literal_to_variable(tokens[0]);
+        if(_gate_list[the_gate_id]->gate_type() != UNDEF_GATE) // TODO error corruption
+            return;
+
+        _gate_list[the_gate_id] = new PIGate(the_gate_id, lno);
+    }
+    else if(type == PO_GATE)
+    {
+        unsigned int the_gate_id = tokens[1];
+        if(_gate_list[the_gate_id]->gate_type() != UNDEF_GATE) // TODO error corruption
+            return;
+
+        bool src_inverted;
+        unsigned int src_gate_id = literal_to_variable(tokens[0], src_inverted);
+        vector<CirGate::related_gate> src;
+        src.push_back(CirGate::related_gate(&_gate_list[src_gate_id], src_inverted));
+
+        _gate_list[the_gate_id] = new POGate(the_gate_id, lno, src);
+    }
+    else if(type == AIG_GATE)
+    {
+        unsigned int the_gate_id = literal_to_variable(tokens[0]);
+        if(_gate_list[the_gate_id]->gate_type() != UNDEF_GATE) // TODO error corruption
+            return;
+
+        bool src_inverted[2];
+        unsigned int src_gate_id[2];
+        src_gate_id[0] = literal_to_variable(tokens[1], src_inverted[0]);
+        src_gate_id[1] = literal_to_variable(tokens[2], src_inverted[1]);
+        vector<CirGate::related_gate> src;
+        src.push_back(CirGate::related_gate(&_gate_list[src_gate_id[0]], src_inverted[0]));
+        src.push_back(CirGate::related_gate(&_gate_list[src_gate_id[1]], src_inverted[1]));
+
+        _gate_list[the_gate_id] = new AIGGate(the_gate_id, lno, src);
+    }
 }
