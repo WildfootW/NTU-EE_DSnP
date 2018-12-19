@@ -46,7 +46,8 @@ CirGate::reportGate() const
     ss << ", line " << getLineNo();
 
     unsigned int times = ss.str().size() + 4;
-    times = max(times, (unsigned int)50);
+    //times = max(times, (unsigned int)50);
+    times = 50;
 
     cout << string(times, '=') << endl;
     cout << "= "  << left << setw(times - 4) << ss.str() << " =" << endl;
@@ -84,7 +85,7 @@ CirGate::report_dfs(const int& max_level, int level, const bool is_fanin, bool p
         cout << endl;
         return;
     }
-    if(is_visited())
+    if(is_visited() && !recursive_list.empty())
     {
         cout << " (*)" << endl;
         return;
@@ -99,12 +100,13 @@ CirGate::report_dfs(const int& max_level, int level, const bool is_fanin, bool p
 }
 
 void
-CirGate::update_inputs_output_list(const related_gate& myself) const
+CirGate::update_inputs_output_list(related_gate myself) const
 {
     for(const related_gate& e:_i_gate_list)
     {
         //if(e.get_gate()->gate_type() == UNDEF_GATE)
         //    continue;
+        myself.set_inverted(e.is_inverted());
         e.get_gate()->add_output_gate(myself);
     }
 }

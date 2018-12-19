@@ -29,7 +29,7 @@ public:
     string symbolic_name;
     static unsigned int visited_ref;
     void add_output_gate(const related_gate& gate_p) { _o_gate_list.push_back(gate_p); }
-    void update_inputs_output_list(const related_gate& myself) const; // add myself to my input's output list
+    void update_inputs_output_list(related_gate myself) const; // add myself to my input's output list
     bool is_floating() const { return floating; }
 //    void set_floating();
     bool have_floating_fanin() const;
@@ -62,6 +62,7 @@ public:
 
         CirGate* get_gate() const { return *gate_p; }
         bool is_inverted() const { return inverted; }
+        void set_inverted(bool new_inverted) { inverted = new_inverted; }
 
     private:
         friend class CirGate;
