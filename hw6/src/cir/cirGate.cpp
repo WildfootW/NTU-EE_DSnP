@@ -99,6 +99,18 @@ CirGate::report_dfs(const int& max_level, int level, const bool is_fanin, bool p
     }
 }
 
+void CirGate::write_aig_dfs(IdList& _aig_list)
+{
+    if(is_visited() || (gate_type() != AIG_GATE))
+        return;
+    set_visited();
+    for(const related_gate& e:_i_gate_list)
+    {
+        e.get_gate()->write_aig_dfs(_aig_list);
+    }
+    _aig_list.push_back(getId());
+}
+
 void
 CirGate::update_inputs_output_list(related_gate myself) const
 {

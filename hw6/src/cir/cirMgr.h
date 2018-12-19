@@ -50,7 +50,7 @@ private:
     unsigned int _header_L;
     unsigned int _header_O;
     unsigned int _header_A;
-    unsigned int _new_header_A; // for write, look at spec. it will be calc at confirm_circuit()
+
     CirGate* _dummy_udf_gate;
     IdList _pi_list;
     IdList _po_list;

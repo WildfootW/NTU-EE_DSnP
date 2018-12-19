@@ -155,7 +155,7 @@ CirGate* CirMgr::getGate(unsigned gid) const
 /**************************************************************/
 /*   class CirMgr member functions for circuit construction   */
 /**************************************************************/
-CirMgr::CirMgr(): _new_header_A(0)
+CirMgr::CirMgr()
 {
     _dummy_udf_gate = new UNDEFGate;
 }
@@ -343,6 +343,53 @@ CirMgr::printFloatGates() const
 void
 CirMgr::writeAag(ostream& outfile) const
 {
+    IdList _aig_list;
+    CirGate::reset_visited();
+    for(const unsigned int& e:_po_list)
+    {
+        unsigned int input_gate_id = _gate_list[e]->get_input_gate_id();
+        _gate_list[input_gate_id]->write_aig_dfs(_aig_list);
+    }
+    outfile << "aag " << _header_M << " "
+                      << _header_I << " "
+                      << _header_L << " "
+                      << _header_O << " "
+                      << _aig_list.size() << endl;
+
+    // input
+    for(const unsigned int& e:_pi_list)
+        _gate_list[e]->write_as_aag(outfile);
+
+    // latches
+
+    // output
+    for(const unsigned int& e:_po_list)
+        _gate_list[e]->write_as_aag(outfile);
+
+    // aig
+    for(const unsigned int& e:_aig_list)
+        _gate_list[e]->write_as_aag(outfile);
+
+    // symbol
+    for(size_t i = 0;i < _pi_list.size();++i)
+    {
+        const unsigned int& e = _pi_list[i];
+        if(_gate_list[e]->symbolic_name.empty())
+            continue;
+        outfile << 'i' << i << ' ' << _gate_list[e]->symbolic_name << '\n';
+    }
+    for(size_t i = 0;i < _po_list.size();++i)
+    {
+        const unsigned int& e = _po_list[i];
+        if(_gate_list[e]->symbolic_name.empty())
+            continue;
+        outfile << 'o' << i << ' ' << _gate_list[e]->symbolic_name << '\n';
+    }
+
+    // comment
+    //outfile << "c\nAAG output by Chung-Yang (Ric) Huang\n";
+    outfile << "c\nAAG output by WildfootW\n";
+    //outfile << "c\n" << comments << endl;
 }
 
 // Help function for read

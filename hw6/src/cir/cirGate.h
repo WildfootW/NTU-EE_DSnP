@@ -28,6 +28,9 @@ public:
 
     string symbolic_name;
     static unsigned int visited_ref;
+    void write_aig_dfs(IdList& _aig_list);
+    virtual void write_as_aag(ostream& outfile) const { cerr << "write_as_aag(ostream&) in CirGate class should not be called\n"; }
+    virtual unsigned int get_input_gate_id() const { cerr << "get_input_gate_id() in CirGate class should not be called\n"; return 0; }; // for CirMgr::write
     void add_output_gate(const related_gate& gate_p) { _o_gate_list.push_back(gate_p); }
     void update_inputs_output_list(related_gate myself) const; // add myself to my input's output list
     bool is_floating() const { return floating; }
@@ -90,6 +93,7 @@ public:
     GateType gate_type() const { return PI_GATE; }
     string getTypeStr() const { return "PI"; }
 
+    void write_as_aag(ostream& outfile) const { outfile << getId() * 2 << '\n'; }
     void print_net(unsigned int& print_line_no) const
     {
         cout << "[" << print_line_no << "] ";
@@ -119,6 +123,8 @@ public:
     GateType gate_type() const { return PO_GATE; }
     string getTypeStr() const { return "PO"; }
 
+    void write_as_aag(ostream& outfile) const { outfile << _i_gate_list[0].get_gate()->getId() * 2 + (_i_gate_list[0].is_inverted() ? 1 : 0) << '\n'; }
+    unsigned int get_input_gate_id() const { return _i_gate_list[0].get_gate()->getId(); } // for CirMgr::write
     void print_net(unsigned int& print_line_no) const
     {
         cout << "[" << print_line_no << "] ";
@@ -150,7 +156,6 @@ public:
         cout << endl;
     }
 private:
-
 };
 
 class AIGGate: public CirGate
@@ -161,6 +166,9 @@ public:
     GateType gate_type() const { return AIG_GATE; }
     string getTypeStr() const { return "AIG"; }
 
+    void write_as_aag(ostream& outfile) const { outfile << getId() * 2 << ' '
+                                                        << _i_gate_list[0].get_gate()->getId() * 2 + (_i_gate_list[0].is_inverted() ? 1 : 0) << ' '
+                                                        << _i_gate_list[1].get_gate()->getId() * 2 + (_i_gate_list[1].is_inverted() ? 1 : 0) << '\n'; }
     void print_net(unsigned int& print_line_no) const
     {
         cout << "[" << print_line_no << "] ";

@@ -1,0 +1,245 @@
+CIRR    tests_aag.fraig/cirp-n.aag
+CIRWrite
+
+
+
+
+CIRR -R tests_aag.fraig/my_test1.aag
+
+CIRWrite
+
+
+
+
+CIRR -R tests_aag.fraig/opt01.aag
+
+CIRWrite
+
+
+
+
+CIRR -R tests_aag.fraig/opt02.aag
+CIRWrite
+
+
+
+
+
+CIRR -R tests_aag.fraig/opt03.aag
+
+
+CIRWrite
+
+
+
+CIRR -R tests_aag.fraig/opt04.aag
+
+
+CIRWrite
+
+
+
+CIRR -R tests_aag.fraig/opt05.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/opt06.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/sim01.aag
+
+
+
+
+
+CIRWrite
+CIRR -R tests_aag.fraig/sim02.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/sim03.aag
+
+
+
+
+
+CIRWrite
+CIRR -R tests_aag.fraig/sim04.aag
+
+CIRWrite
+
+
+
+
+CIRR -R tests_aag.fraig/sim05.aag
+
+
+
+CIRWrite
+
+
+CIRR -R tests_aag.fraig/sim06.aag
+
+
+CIRWrite
+
+
+
+CIRR -R tests_aag.fraig/sim07.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/sim08.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/sim09.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/sim10.aag
+
+
+
+CIRWrite
+
+
+CIRR -R tests_aag.fraig/sim11.aag
+CIRWrite
+
+
+
+
+
+CIRR -R tests_aag.fraig/sim12.aag
+
+
+CIRWrite
+
+
+
+CIRR -R tests_aag.fraig/sim13.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/sim14.aag
+
+
+
+
+
+CIRWrite
+CIRR -R tests_aag.fraig/sim15.aag
+
+
+
+CIRWrite
+
+
+CIRR -R tests_aag.fraig/strash01.aag
+
+CIRWrite
+
+
+
+
+CIRR -R tests_aag.fraig/strash02.aag
+
+
+CIRWrite
+
+
+
+CIRR -R tests_aag.fraig/strash03.aag
+
+
+
+CIRWrite
+
+
+CIRR -R tests_aag.fraig/strash04.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/strash05.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/strash06.aag
+
+
+CIRWrite
+
+
+
+CIRR -R tests_aag.fraig/strash07.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/strash08.aag
+
+CIRWrite
+
+
+
+
+CIRR -R tests_aag.fraig/strash09.aag
+
+CIRWrite
+
+
+
+
+CIRR -R tests_aag.fraig/strash10.aag
+
+
+
+CIRWrite
+
+
+CIRR -R tests_aag.fraig/test1.aag
+
+
+
+
+CIRWrite
+
+CIRR -R tests_aag.fraig/test2.aag
+
+
+
+
+CIRWrite
+
+q -f
