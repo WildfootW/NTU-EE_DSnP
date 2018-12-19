@@ -13,7 +13,7 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 my_adttest="../cirTest"
 ref_adttest="../ref/cirTest-ref"
 #dofiles="do1 do2 do3 do4 do5"
-dofiles="mydo1 mydo2 mydo3 mydo4"
+dofiles="mydo1 mydo2 mydo3 mydo4 mydo5"
 
 echo "" > diff_result
 for dofile in `echo $dofiles | tr ' ' '\n'`; do
