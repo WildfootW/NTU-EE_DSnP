@@ -56,13 +56,46 @@ CirGate::reportGate() const
 void
 CirGate::reportFanin(int level) const
 {
-   assert (level >= 0);
+    assert (level >= 0);
+    reset_visited();
+    report_dfs(level, level, true, false);
 }
 
 void
 CirGate::reportFanout(int level) const
 {
-   assert (level >= 0);
+    assert (level >= 0);
+    reset_visited();
+    report_dfs(level, level, false, false);
+}
+
+void
+CirGate::report_dfs(const int& max_level, int level, const bool is_fanin, bool print_inverted) const
+{
+    const vector<related_gate>& recursive_list = (is_fanin ? _i_gate_list : _o_gate_list);
+
+    cout << string((max_level - level) * 2, ' ');
+    if(print_inverted)
+        cout << '!';
+    report_print_gate();
+
+    if(level == 0)
+    {
+        cout << endl;
+        return;
+    }
+    if(is_visited())
+    {
+        cout << " (*)" << endl;
+        return;
+    }
+    set_visited();
+    cout << endl;
+
+    for(const related_gate& e:recursive_list)
+    {
+        e.get_gate()->report_dfs(max_level, level - 1, is_fanin, e.is_inverted());
+    }
 }
 
 void

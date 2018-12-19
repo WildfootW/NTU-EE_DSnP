@@ -19,8 +19,6 @@
 
 using namespace std;
 
-// TODO: Implement memeber functions for class CirMgr
-
 /*******************************/
 /*   Global variable and enum  */
 /*******************************/
@@ -149,8 +147,8 @@ parseError(CirParseError err)
 /* access */
 CirGate* CirMgr::getGate(unsigned gid) const
 {
-    if(_gate_list[gid]->gate_type() == UNDEF_GATE)
-        return NULL;
+//    if(_gate_list[gid]->gate_type() == UNDEF_GATE)
+//        return NULL;
     return _gate_list[gid];
 }
 

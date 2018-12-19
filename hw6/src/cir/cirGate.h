@@ -51,6 +51,8 @@ public:
     void reportGate() const;
     void reportFanin(int level) const;
     void reportFanout(int level) const;
+    void report_dfs(const int& max_level, int level, const bool is_fanin, bool print_inverted) const;
+    void report_print_gate() const { cout << getTypeStr() << " " << getId(); }
 
     class related_gate
     {
