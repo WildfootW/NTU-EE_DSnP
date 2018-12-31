@@ -76,3 +76,14 @@ hw6/src/util/myGetChar.o
 hw6/src/util/myString.o
 hw6/src/util/util.o
 
+# hw7
+hw7/bin/taskMgr
+hw7/lib/libtask.a
+hw7/lib/libutil.a
+hw7/src/main/main.o
+hw7/src/task/taskCmd.o
+hw7/src/task/taskMgr.o
+hw7/src/util/myGetChar.o
+hw7/src/util/myString.o
+hw7/src/util/util.o
+
