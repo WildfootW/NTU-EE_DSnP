@@ -50,7 +50,7 @@ public:
    void clear();
 
    size_t size() const { return _taskHeap.size(); }
-   bool empty() { return size() == 0; }
+   bool empty() { return _taskHeap.empty(); }
 
    const TaskNode& min() const { return _taskHeap.min(); }
    void add(size_t nMachines);

@@ -18,7 +18,7 @@ using namespace std;
 TaskMgr *taskMgr = 0;
 
 // BEGIN: DO NOT CHANGE THIS PART
-TaskNode::TaskNode() 
+TaskNode::TaskNode()
 {
    _name.resize(NAME_LEN);
    for (int i = 0; i < NAME_LEN; ++i)
@@ -27,7 +27,7 @@ TaskNode::TaskNode()
 }
 
 size_t
-TaskNode::operator () () const 
+TaskNode::operator () () const
 {
    size_t k = 0, n = (_name.length() <= 5)? _name.length(): 5;
    for (size_t i = 0; i < n; ++i)
@@ -53,7 +53,7 @@ TaskMgr::clear()
 
 void
 TaskMgr::remove(size_t nMachines)
-{        
+{
    for (size_t i = 0, n = nMachines; i < n; ++i) {
       size_t j = rnGen(size());
       assert(_taskHash.remove(_taskHeap[j]));
@@ -85,7 +85,16 @@ TaskMgr::remove(const string& s)
 void
 TaskMgr::add(size_t nMachines)
 {
-   // TODO...
+    while(nMachines)
+    {
+        TaskNode new_task;
+        if(_taskHash.check(new_task))
+            continue;
+        _taskHash.insert(new_task);
+        _taskHeap.insert(new_task);
+        cout << "Task node inserted: " << new_task << endl;
+        --nMachines;
+    }
 }
 
 // return true if TaskNode is successfully inserted
@@ -93,8 +102,13 @@ TaskMgr::add(size_t nMachines)
 bool
 TaskMgr::add(const string& s, size_t l)
 {
-   // TODO...
-   return false;
+    TaskNode new_task(s, l);
+    if(_taskHash.check(new_task))
+        return false;
+    _taskHash.insert(new_task);
+    _taskHeap.insert(new_task);
+    cout << "Task node inserted: " << new_task << endl;
+    return true;
 }
 
 // Assign the min task node with 'l' extra load.
@@ -106,13 +120,22 @@ TaskMgr::add(const string& s, size_t l)
 bool
 TaskMgr::assign(size_t l)
 {
-   // TODO...
-   return true;
+    if(empty())
+        return false;
+
+    TaskNode min_node(_taskHeap.min());
+    min_node += l;
+
+    _taskHeap.delMin();
+    _taskHeap.insert(min_node);
+    _taskHash.update(min_node);
+
+    return true;
 }
 
 // WARNING: DO NOT CHANGE THESE TWO FUNCTIONS!!
 void
-TaskMgr::printAllHash() const 
+TaskMgr::printAllHash() const
 {
    HashSet<TaskNode>::iterator hi = _taskHash.begin();
    for (; hi != _taskHash.end(); ++hi)

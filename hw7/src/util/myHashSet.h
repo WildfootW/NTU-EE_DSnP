@@ -49,7 +49,7 @@ public:
         friend class HashSet<Data>;
     public:
         iterator(): _hash_set(NULL), _bucket_index(0), _pos(0) {}
-        iterator(const HashSet<Data>* _hash_set, size_t _bucket_index, size_t _pos): _hash_set((HashSet<Data>*)_hash_set), _bucket_index(_bucket_index), _pos(_pos) {}
+        iterator(const HashSet<Data>* _hash_set, size_t _bucket_index, size_t _pos): _hash_set(const_cast<HashSet<Data>*>(_hash_set)), _bucket_index(_bucket_index), _pos(_pos) {}
         ~iterator() {}
         const Data& operator * () const { return (*_hash_set)[_bucket_index][_pos]; }
         iterator& operator ++ ()
@@ -210,7 +210,7 @@ public:
 
     bool replace(const iterator& it, const Data& d)
     {
-        if(!it.is_vald())
+        if(!it.is_valid())
             return false;
         _buckets[it._bucket_index][it._pos] = d;
         return true;
