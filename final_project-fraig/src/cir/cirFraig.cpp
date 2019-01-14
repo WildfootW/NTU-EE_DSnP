@@ -10,7 +10,7 @@
 #include "cirMgr.h"
 #include "cirGate.h"
 #include "sat.h"
-#include "myHashMap.h"
+#include "myHash.h"
 #include "util.h"
 
 using namespace std;
