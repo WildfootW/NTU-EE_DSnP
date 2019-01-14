@@ -116,8 +116,9 @@ public:
 
     // strange function for user
     size_t numBuckets() const { return _bucket_num; }
-    //hash_bucket& operator [] (size_t i) { return _buckets[i]; }
-    //const hash_bucket& operator [] (size_t i) const { return _buckets[i]; }
+    // now is for iterator
+    hash_bucket& operator [] (size_t i) { return _buckets[i]; }
+    const hash_bucket& operator [] (size_t i) const { return _buckets[i]; }
 
     // Point to the first valid data
     iterator begin() const
