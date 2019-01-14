@@ -9,11 +9,7 @@
 #ifndef MY_CACHE_H
 #define MY_CACHE_H
 
-#include <vector>
-
 using namespace std;
-
-// TODO: (Optionally) Implement your own HashMap and Cache classes.
 
 //---------------------
 // Define Cache classes
@@ -25,57 +21,55 @@ using namespace std;
 // {
 // public:
 //    CacheKey() {}
-//    
 //    size_t operator() () const { return 0; }
-//   
 //    bool operator == (const CacheKey&) const { return true; }
-//       
 // private:
-// }; 
-// 
+// };
+//
+
 template <class CacheKey, class CacheData>
 class Cache
 {
 typedef pair<CacheKey, CacheData> CacheNode;
 
 public:
-   Cache() : _size(0), _cache(0) {}
-   Cache(size_t s) : _size(0), _cache(0) { init(s); }
-   ~Cache() { reset(); }
+    Cache() : _size(0), _cache(0) {}
+    Cache(size_t s) : _size(0), _cache(0) { init(s); }
+    ~Cache() { reset(); }
 
-   // NO NEED to implement Cache::iterator class
+    // NO NEED to implement Cache::iterator class
 
-   // TODO: implement these functions
-   //
-   // Initialize _cache with size s
-   void init(size_t s) { reset(); _size = s; _cache = new CacheNode[s]; }
-   void reset() {  _size = 0; if (_cache) { delete [] _cache; _cache = 0; } }
+    // Initialize _cache with size s
+    void init(size_t s) { reset(); _size = s; _cache = new CacheNode[s]; }
+    void reset() {  _size = 0; if (_cache) { delete [] _cache; _cache = 0; } }
 
-   size_t size() const { return _size; }
+    size_t size() const { return _size; }
 
-   CacheNode& operator [] (size_t i) { return _cache[i]; }
-   const CacheNode& operator [](size_t i) const { return _cache[i]; }
+    CacheNode& operator [] (size_t i) { return _cache[i]; }
+    const CacheNode& operator [] (size_t i) const { return _cache[i]; }
 
-   // return false if cache miss
-   bool read(const CacheKey& k, CacheData& d) const {
-      size_t i = k() % _size;
-      if (k == _cache[i].first) {
-         d = _cache[i].second;
-         return true;
-      }
-      return false;
-   }
-   // If k is already in the Cache, overwrite the CacheData
-   void write(const CacheKey& k, const CacheData& d) {
-      size_t i = k() % _size;
-      _cache[i].first = k;
-      _cache[i].second = d;
-   }
+    // return false if cache miss
+    bool read(const CacheKey& k, CacheData& d) const
+    {
+        size_t i = k() % _size;
+        if (k == _cache[i].first)
+        {
+            d = _cache[i].second;
+            return true;
+        }
+        return false;
+    }
+    // If k is already in the Cache, overwrite the CacheData
+    void write(const CacheKey& k, const CacheData& d)
+    {
+        size_t i = k() % _size;
+        _cache[i].first = k;
+        _cache[i].second = d;
+    }
 
 private:
-   // Do not add any extra data member
-   size_t         _size;
-   CacheNode*     _cache;
+    size_t         _size;
+    CacheNode*     _cache;
 };
 
 #endif // MY_CACHE_H
