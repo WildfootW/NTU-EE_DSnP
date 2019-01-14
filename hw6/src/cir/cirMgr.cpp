@@ -120,7 +120,7 @@ parseError(CirParseError err)
       case REDEF_GATE:
          cerr << "[ERROR] Line " << lineNo+1 << ": Literal \"" << errInt
               << "\" is redefined, previously defined as "
-              << errGate->getTypeStr() << " in line " << errGate->getLineNo()
+              << errGate->get_type_str() << " in line " << errGate->get_line_no()
               << "!!" << endl;
          break;
       case REDEF_SYMBOLIC_NAME:
@@ -147,7 +147,7 @@ parseError(CirParseError err)
 /* access */
 CirGate* CirMgr::getGate(unsigned gid) const
 {
-//    if(_gate_list[gid]->gate_type() == UNDEF_GATE)
+//    if(_gate_list[gid]->get_type() == UNDEF_GATE)
 //        return NULL;
     return _gate_list[gid];
 }
@@ -397,7 +397,7 @@ bool CirMgr::confirm_circuit()
 {
     for(unsigned int i = 0;i < _gate_list.size();++i)
     {
-        CirGate::related_gate myself(&_gate_list[i]);
+        CirGate::RelatedGate myself(&_gate_list[i]);
         _gate_list[i]->update_inputs_output_list(myself);
     }
 //    for(unsigned int i = 0;i < _gate_list.size();++i)
@@ -411,7 +411,7 @@ bool CirMgr::confirm_circuit()
             _float_fanin_list.push_back(i);
         if(_gate_list[i]->not_used())
             _not_used_list.push_back(i);
-        if(_gate_list[i]->gate_type() == UNDEF_GATE)
+        if(_gate_list[i]->get_type() == UNDEF_GATE)
             _gate_list[i] = new UNDEFGate(i);
     }
     return true;
@@ -515,7 +515,7 @@ void CirMgr::set_gate(const vector<int>& tokens, GateType type, unsigned int lno
     if(type == PI_GATE)
     {
         unsigned int the_gate_id = literal_to_variable(tokens[0]);
-        if(_gate_list[the_gate_id]->gate_type() != UNDEF_GATE) // TODO error corruption
+        if(_gate_list[the_gate_id]->get_type() != UNDEF_GATE) // TODO error corruption
             return;
 
         _gate_list[the_gate_id] = new PIGate(the_gate_id, lno);
@@ -524,13 +524,13 @@ void CirMgr::set_gate(const vector<int>& tokens, GateType type, unsigned int lno
     else if(type == PO_GATE)
     {
         unsigned int the_gate_id = tokens[1];
-        if(_gate_list[the_gate_id]->gate_type() != UNDEF_GATE) // TODO error corruption
+        if(_gate_list[the_gate_id]->get_type() != UNDEF_GATE) // TODO error corruption
             return;
 
         bool src_inverted;
         unsigned int src_gate_id = literal_to_variable(tokens[0], src_inverted);
-        vector<CirGate::related_gate> src;
-        src.push_back(CirGate::related_gate(&_gate_list[src_gate_id], src_inverted));
+        vector<CirGate::RelatedGate> src;
+        src.push_back(CirGate::RelatedGate(&_gate_list[src_gate_id], src_inverted));
 
         _gate_list[the_gate_id] = new POGate(the_gate_id, lno, src);
         _po_list.push_back(the_gate_id);
@@ -538,16 +538,16 @@ void CirMgr::set_gate(const vector<int>& tokens, GateType type, unsigned int lno
     else if(type == AIG_GATE)
     {
         unsigned int the_gate_id = literal_to_variable(tokens[0]);
-        if(_gate_list[the_gate_id]->gate_type() != UNDEF_GATE) // TODO error corruption
+        if(_gate_list[the_gate_id]->get_type() != UNDEF_GATE) // TODO error corruption
             return;
 
         bool src_inverted[2];
         unsigned int src_gate_id[2];
         src_gate_id[0] = literal_to_variable(tokens[1], src_inverted[0]);
         src_gate_id[1] = literal_to_variable(tokens[2], src_inverted[1]);
-        vector<CirGate::related_gate> src;
-        src.push_back(CirGate::related_gate(&_gate_list[src_gate_id[0]], src_inverted[0]));
-        src.push_back(CirGate::related_gate(&_gate_list[src_gate_id[1]], src_inverted[1]));
+        vector<CirGate::RelatedGate> src;
+        src.push_back(CirGate::RelatedGate(&_gate_list[src_gate_id[0]], src_inverted[0]));
+        src.push_back(CirGate::RelatedGate(&_gate_list[src_gate_id[1]], src_inverted[1]));
 
         _gate_list[the_gate_id] = new AIGGate(the_gate_id, lno, src);
     }
