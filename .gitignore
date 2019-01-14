@@ -87,3 +87,22 @@ hw7/src/util/myGetChar.o
 hw7/src/util/myString.o
 hw7/src/util/util.o
 
+# final
+final_project-fraig/bin/fraig
+final_project-fraig/lib/libcir.a
+final_project-fraig/lib/libsat.a
+final_project-fraig/lib/libutil.a
+final_project-fraig/src/cir/cirCmd.o
+final_project-fraig/src/cir/cirFraig.o
+final_project-fraig/src/cir/cirGate.o
+final_project-fraig/src/cir/cirMgr.o
+final_project-fraig/src/cir/cirOpt.o
+final_project-fraig/src/cir/cirSim.o
+final_project-fraig/src/main/main.o
+final_project-fraig/src/sat/File.o
+final_project-fraig/src/sat/Proof.o
+final_project-fraig/src/sat/Solver.o
+final_project-fraig/src/util/myGetChar.o
+final_project-fraig/src/util/myString.o
+final_project-fraig/src/util/util.o
+
