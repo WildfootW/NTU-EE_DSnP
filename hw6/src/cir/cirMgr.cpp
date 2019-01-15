@@ -155,18 +155,11 @@ CirGate* CirMgr::getGate(unsigned gid) const
 /**************************************************************/
 /*   class CirMgr member functions for circuit construction   */
 /**************************************************************/
-CirMgr::CirMgr()
-{
-    _dummy_udf_gate = new UNDEFGate;
-}
+CirMgr::CirMgr() { }
 CirMgr::~CirMgr()
 {
     for(size_t i = 0;i < _gate_list.size();++i)
-    {
-        if(_gate_list[i] != _dummy_udf_gate)
-            delete _gate_list[i];
-    }
-    delete _dummy_udf_gate;
+        delete _gate_list[i];
 }
 bool
 CirMgr::readCircuit(const string& fileName)
@@ -193,6 +186,15 @@ CirMgr::readCircuit(const string& fileName)
     ++line_no;
     read_set_header(tokens);
 
+    // init _gate_list
+    _gate_list.resize(_header_M + _header_O + 1, NULL);
+    for(unsigned int i = 0;i < _gate_list.size();++i)
+        _gate_list[i] = new UNDEFGate(i);
+
+    // CONST Gate
+    tokens.clear();
+    read_init_add_gate(CONST_GATE, 0, tokens);
+
     // Inputs
     //clog << "READ INPUTS" << endl;
     for(unsigned int i = 0;i < _header_I;++i)
@@ -204,7 +206,7 @@ CirMgr::readCircuit(const string& fileName)
             return false;
         }
         ++line_no;
-        read_set_gate(tokens, PI_GATE, line_no);
+        read_init_add_gate(PI_GATE, line_no, tokens);
     }
 
     // Latches
@@ -222,7 +224,7 @@ CirMgr::readCircuit(const string& fileName)
         }
         ++line_no;
         tokens.push_back(_header_M + i + 1); // origin output tokens don't know PO's variable ID
-        read_set_gate(tokens, PO_GATE, line_no);
+        read_init_add_gate(PO_GATE, line_no, tokens);
     }
 
     // ANDs
@@ -236,7 +238,7 @@ CirMgr::readCircuit(const string& fileName)
             return false;
         }
         ++line_no;
-        read_set_gate(tokens, AIG_GATE, line_no);
+        read_init_add_gate(AIG_GATE, line_no, tokens);
     }
 
     // Symbols
@@ -286,14 +288,15 @@ CirMgr::printSummary() const
     cout << "------------------" << endl;
     cout << "  Total" << setw(9) << right << _header_I + _header_O + _header_A << endl;
 
-// for debug
-//    for(size_t i = 0;i < _gate_list.size();++i)
-//    {
-//        cout << i << ": ";
-//        _gate_list[i]->printGate();
-//    }
-//    cout << "Comments: " << endl;
-//    cout << comments << endl;
+#ifdef DEBUG
+   for(size_t i = 0;i < _gate_list.size();++i)
+   {
+       cout << i << ": ";
+       _gate_list[i]->printGate();
+   }
+   cout << "Comments: " << endl;
+   cout << comments << endl;
+#endif
 }
 
 void
@@ -395,12 +398,6 @@ CirMgr::writeAag(ostream& outfile) const
 // Help function for read
 bool CirMgr::read_confirm_circuit()
 {
-    //read_complete_o_list();
-    for(unsigned int i = 0;i < _gate_list.size();++i)
-    {
-        CirGate::RelatedGate myself(&_gate_list[i]);
-        _gate_list[i]->read_add_to_inputs_o_list(myself);
-    }
     // read_complete_floating_list(); // for that have direct float input
     for(unsigned int i = 0;i < _gate_list.size();++i)
     {
@@ -412,12 +409,6 @@ bool CirMgr::read_confirm_circuit()
     {
         if(_gate_list[i]->is_not_using())
             _not_used_list.push_back(i);
-    }
-    // read give undef gate different gate entity
-    for(unsigned int i = 0;i < _gate_list.size();++i)
-    {
-        if(_gate_list[i]->get_type() == UNDEF_GATE)
-            _gate_list[i] = new UNDEFGate(i);
     }
     return true;
 }
@@ -512,48 +503,74 @@ void CirMgr::read_set_header(const vector<int>& tokens)
     _header_L = tokens[2];
     _header_O = tokens[3];
     _header_A = tokens[4];
-    _gate_list.resize(_header_M + _header_O + 1, _dummy_udf_gate);
-    _gate_list[0] = new CONSTGate;
 }
-void CirMgr::read_set_gate(const vector<int>& tokens, GateType type, unsigned int lno)
+void CirMgr::read_init_add_gate(GateType type, unsigned int lno, const vector<int>& tokens)
 {
-    if(type == PI_GATE)
+    CirGate** ori_gate;
+    CirGate*  new_gate;
+
+    if(type == CONST_GATE)
+    {
+        ori_gate = &_gate_list[0];
+        new_gate = new CONSTGate();
+    }
+    else if(type == PI_GATE)
     {
         unsigned int the_gate_id = literal_to_variable(tokens[0]);
+// ##########################################################################################
         if(_gate_list[the_gate_id]->get_type() != UNDEF_GATE) // TODO error corruption
             return;
+// ##########################################################################################
+        ori_gate = &_gate_list[the_gate_id];
+        new_gate = new PIGate(the_gate_id, lno, (*ori_gate)->get_i_list(), (*ori_gate)->get_o_list());
 
-        _gate_list[the_gate_id] = new PIGate(the_gate_id, lno);
         _pi_list.push_back(the_gate_id);
     }
     else if(type == PO_GATE)
     {
         unsigned int the_gate_id = tokens[1];
+// ##########################################################################################
         if(_gate_list[the_gate_id]->get_type() != UNDEF_GATE) // TODO error corruption
             return;
+// ##########################################################################################
+        ori_gate = &_gate_list[the_gate_id];
+        new_gate = new POGate(the_gate_id, lno, (*ori_gate)->get_i_list(), (*ori_gate)->get_o_list());
 
         bool src_inverted;
-        unsigned int src_gate_id = literal_to_variable(tokens[0], src_inverted);
-        vector<CirGate::RelatedGate> src;
-        src.push_back(CirGate::RelatedGate(&_gate_list[src_gate_id], src_inverted));
+        unsigned int src_gate_id;
+        src_gate_id = literal_to_variable(tokens[0], src_inverted);
+        new_gate->add_related_gate(true, src_inverted, _gate_list[src_gate_id]);
 
-        _gate_list[the_gate_id] = new POGate(the_gate_id, lno, src);
         _po_list.push_back(the_gate_id);
     }
     else if(type == AIG_GATE)
     {
         unsigned int the_gate_id = literal_to_variable(tokens[0]);
+// ##########################################################################################
         if(_gate_list[the_gate_id]->get_type() != UNDEF_GATE) // TODO error corruption
             return;
+// ##########################################################################################
+        ori_gate = &_gate_list[the_gate_id];
+        new_gate = new AIGGate(the_gate_id, lno, (*ori_gate)->get_i_list(), (*ori_gate)->get_o_list());
 
-        bool src_inverted[2];
-        unsigned int src_gate_id[2];
-        src_gate_id[0] = literal_to_variable(tokens[1], src_inverted[0]);
-        src_gate_id[1] = literal_to_variable(tokens[2], src_inverted[1]);
-        vector<CirGate::RelatedGate> src;
-        src.push_back(CirGate::RelatedGate(&_gate_list[src_gate_id[0]], src_inverted[0]));
-        src.push_back(CirGate::RelatedGate(&_gate_list[src_gate_id[1]], src_inverted[1]));
-
-        _gate_list[the_gate_id] = new AIGGate(the_gate_id, lno, src);
+        bool src_inverted;
+        unsigned int src_gate_id;
+        src_gate_id = literal_to_variable(tokens[1], src_inverted);
+        new_gate->add_related_gate(true, src_inverted, _gate_list[src_gate_id]);
+        src_gate_id = literal_to_variable(tokens[2], src_inverted);
+        new_gate->add_related_gate(true, src_inverted, _gate_list[src_gate_id]);
     }
+
+    for(auto it = (*ori_gate)->get_i_list().begin(); it != (*ori_gate)->get_i_list().end();++it)
+    {
+        CirGate* r_gate = (*it).get_gate_p();
+        r_gate->replace_related_gate(false, (*ori_gate), new_gate);
+    }
+    for(auto it = (*ori_gate)->get_o_list().begin(); it != (*ori_gate)->get_o_list().end();++it)
+    {
+        CirGate* r_gate = (*it).get_gate_p();
+        r_gate->replace_related_gate(true, (*ori_gate), new_gate);
+    }
+    delete (*ori_gate);
+    (*ori_gate) = new_gate;
 }
