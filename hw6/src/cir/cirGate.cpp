@@ -112,33 +112,21 @@ void CirGate::write_aig_dfs(IdList& _aig_list)
 }
 
 void
-CirGate::update_inputs_output_list(RelatedGate myself) const
+CirGate::read_add_to_inputs_o_list(RelatedGate myself) const
 {
     for(const RelatedGate& e:_i_gate_list)
     {
-        //if(e.get_gate_p()->get_type() == UNDEF_GATE)
-        //    continue;
         myself.set_inverted(e.is_inverted());
         e.get_gate_p()->add_output_gate(myself);
     }
 }
 
-//void
-//CirGate::set_floating()
-//{
-//    floating = true;
-//    for(RelatedGate& e:_o_gate_list)
-//    {
-//        if(e.get_gate_p()->is_floating() == false)
-//            e.get_gate_p()->set_floating();
-//    }
-//}
 bool
-CirGate::have_floating_fanin() const
+CirGate::is_floating() const
 {
     for(const RelatedGate& e:_i_gate_list)
     {
-        if(e.get_gate_p()->is_floating())
+        if(e.get_gate_p()->get_type() == UNDEF_GATE)
             return true;
     }
     return false;

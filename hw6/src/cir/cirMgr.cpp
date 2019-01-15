@@ -191,7 +191,7 @@ CirMgr::readCircuit(const string& fileName)
         return false;
     }
     ++line_no;
-    set_header(tokens);
+    read_set_header(tokens);
 
     // Inputs
     //clog << "READ INPUTS" << endl;
@@ -204,7 +204,7 @@ CirMgr::readCircuit(const string& fileName)
             return false;
         }
         ++line_no;
-        set_gate(tokens, PI_GATE, line_no);
+        read_set_gate(tokens, PI_GATE, line_no);
     }
 
     // Latches
@@ -222,7 +222,7 @@ CirMgr::readCircuit(const string& fileName)
         }
         ++line_no;
         tokens.push_back(_header_M + i + 1); // origin output tokens don't know PO's variable ID
-        set_gate(tokens, PO_GATE, line_no);
+        read_set_gate(tokens, PO_GATE, line_no);
     }
 
     // ANDs
@@ -236,7 +236,7 @@ CirMgr::readCircuit(const string& fileName)
             return false;
         }
         ++line_no;
-        set_gate(tokens, AIG_GATE, line_no);
+        read_set_gate(tokens, AIG_GATE, line_no);
     }
 
     // Symbols
@@ -258,7 +258,7 @@ CirMgr::readCircuit(const string& fileName)
     }
 
     aag_file.close();
-    confirm_circuit();
+    read_confirm_circuit();
     return true;
 }
 
@@ -330,7 +330,7 @@ void
 CirMgr::printFloatGates() const
 {
     cout << "Gates with floating fanin(s):";
-    for(auto& e:_float_fanin_list)
+    for(auto& e:_floating_list)
         cout << " " << e;
     cout << endl;
 
@@ -347,7 +347,7 @@ CirMgr::writeAag(ostream& outfile) const
     CirGate::reset_visited();
     for(const unsigned int& e:_po_list)
     {
-        unsigned int input_gate_id = _gate_list[e]->get_input_gate_id();
+        unsigned int input_gate_id = _gate_list[e]->write_get_input_gate_id();
         _gate_list[input_gate_id]->write_aig_dfs(_aig_list);
     }
     outfile << "aag " << _header_M << " "
@@ -393,24 +393,29 @@ CirMgr::writeAag(ostream& outfile) const
 }
 
 // Help function for read
-bool CirMgr::confirm_circuit()
+bool CirMgr::read_confirm_circuit()
 {
+    //read_complete_o_list();
     for(unsigned int i = 0;i < _gate_list.size();++i)
     {
         CirGate::RelatedGate myself(&_gate_list[i]);
-        _gate_list[i]->update_inputs_output_list(myself);
+        _gate_list[i]->read_add_to_inputs_o_list(myself);
     }
-//    for(unsigned int i = 0;i < _gate_list.size();++i)
-//    {
-//        if(_gate_list[i]->is_floating())
-//            _gate_list[i]->set_floating();
-//    }
+    // read_complete_floating_list(); // for that have direct float input
     for(unsigned int i = 0;i < _gate_list.size();++i)
     {
-        if(_gate_list[i]->have_floating_fanin())
-            _float_fanin_list.push_back(i);
-        if(_gate_list[i]->not_used())
+        if(_gate_list[i]->is_floating())
+            _floating_list.push_back(i);
+    }
+    // read complete not used list
+    for(unsigned int i = 0;i < _gate_list.size();++i)
+    {
+        if(_gate_list[i]->is_not_using())
             _not_used_list.push_back(i);
+    }
+    // read give undef gate different gate entity
+    for(unsigned int i = 0;i < _gate_list.size();++i)
+    {
         if(_gate_list[i]->get_type() == UNDEF_GATE)
             _gate_list[i] = new UNDEFGate(i);
     }
@@ -486,7 +491,7 @@ bool CirMgr::read_gate_parser(const string& input, vector<int>& tokens, GateType
             return false;
     }
 }
-unsigned int CirMgr::literal_to_variable(int literal_id, bool& inverted) const
+inline unsigned int CirMgr::literal_to_variable(int literal_id, bool& inverted)
 {
     inverted = false;
     if(literal_id % 2)
@@ -496,11 +501,11 @@ unsigned int CirMgr::literal_to_variable(int literal_id, bool& inverted) const
     }
     return (literal_id / 2);
 }
-unsigned int CirMgr::literal_to_variable(int literal_id) const
+inline unsigned int CirMgr::literal_to_variable(int literal_id)
 {
     return (literal_id / 2);
 }
-void CirMgr::set_header(const vector<int>& tokens)
+void CirMgr::read_set_header(const vector<int>& tokens)
 {
     _header_M = tokens[0];
     _header_I = tokens[1];
@@ -510,7 +515,7 @@ void CirMgr::set_header(const vector<int>& tokens)
     _gate_list.resize(_header_M + _header_O + 1, _dummy_udf_gate);
     _gate_list[0] = new CONSTGate;
 }
-void CirMgr::set_gate(const vector<int>& tokens, GateType type, unsigned int lno)
+void CirMgr::read_set_gate(const vector<int>& tokens, GateType type, unsigned int lno)
 {
     if(type == PI_GATE)
     {

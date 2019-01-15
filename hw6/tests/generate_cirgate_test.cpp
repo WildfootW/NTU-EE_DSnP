@@ -9,7 +9,8 @@
 
 #include <iostream>
 #include <fstream>
-#include <vector> 
+#include <vector>
+#include <map>
 #define MAX 2147483647
 using namespace std;
 
@@ -17,6 +18,7 @@ static const string path = "./tests_aag.fraig/";
 
 void generate_cirgate_test(const string filename, ostream& os)
 {
+    map<int, bool> used_gid;
     os << "CIRRead -R " << filename << endl;
     ifstream fs(filename);
     while(fs)
@@ -31,6 +33,9 @@ void generate_cirgate_test(const string filename, ostream& os)
         fs.putback(ch);
         int num;
         fs >> num;
+        if(used_gid.find((int)(num / 2)) != used_gid.end())
+            continue;
+        used_gid.insert(pair<int, bool>((int)(num / 2), true));
         os << "CIRGate " << (int)(num / 2) << endl;
         os << "CIRGate " << (int)(num / 2) << " -FANIn " << MAX << endl;
         os << "CIRGate " << (int)(num / 2) << " -FANOut " << MAX << endl;

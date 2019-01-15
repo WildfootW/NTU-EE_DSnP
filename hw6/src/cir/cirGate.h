@@ -32,13 +32,13 @@ public:
 
     private:
         CirGate** gate_pp;
-        bool inverted;
+        bool inverted;      // [TODO] store in LSB
     };
     using RelatedGateList = vector<RelatedGate>;
 
     CirGate() {}
-    CirGate(const unsigned int& vid, const unsigned int& lno, bool floating = false): _variable_id(vid), _line_no(lno), floating(floating), visited(0) {}
-    CirGate(const unsigned int& vid, const unsigned int& lno, const RelatedGateList& src, bool floating = false): _i_gate_list(src), _variable_id(vid), _line_no(lno), floating(floating), visited(0) {}
+    CirGate(const unsigned int& vid, const unsigned int& lno): _variable_id(vid), _line_no(lno), visited(0) {}
+    CirGate(const unsigned int& vid, const unsigned int& lno, const RelatedGateList& src): _i_gate_list(src), _variable_id(vid), _line_no(lno), visited(0) {}
     virtual ~CirGate() {}
 
     string symbolic_name;
@@ -48,26 +48,34 @@ public:
     bool is_visited() const { return (visited == visited_ref); }
     void set_visited() const { visited = visited_ref; }
 
+    // check status
+    bool is_floating() const;
+    bool is_not_using() const { return (get_type() == PI_GATE || get_type() == AIG_GATE) && _o_gate_list.empty(); }
+
     // Basic access methods
     virtual GateType get_type() const = 0;
     virtual string get_type_str() const = 0;
     unsigned int get_line_no() const { return _line_no; }
     unsigned int get_variable_id() const { return _variable_id; }
 
+    // modify class member
+    void add_output_gate(const RelatedGate& r_gate) { _o_gate_list.push_back(r_gate); }
+    void add_input_gate (const RelatedGate& r_gate) { _i_gate_list.push_back(r_gate); }
+
+    // for CIRWrite
     void write_aig_dfs(IdList& _aig_list);
     virtual void write_as_aag(ostream& outfile) const { cerr << "write_as_aag(ostream&) in CirGate class should not be called\n"; }
-    virtual unsigned int get_input_gate_id() const { cerr << "get_input_gate_id() in CirGate class should not be called\n"; return 0; }; // for CirMgr::write
-    void add_output_gate(const RelatedGate& r_gate) { _o_gate_list.push_back(r_gate); }
-    void update_inputs_output_list(RelatedGate myself) const; // add myself to my input's output list
-    bool is_floating() const { return floating; }
-//    void set_floating();
-    bool have_floating_fanin() const;
-    bool not_used() const { return (get_type() == PI_GATE || get_type() == AIG_GATE) && _o_gate_list.empty(); }
+    virtual unsigned int write_get_input_gate_id() const { cerr << "write_get_input_gate_id() in CirGate class should not be called\n"; return 0; }; // for CirMgr::write
 
-    // Printing functions
+    // for CIRRead
+    void read_add_to_inputs_o_list(RelatedGate myself) const; // add myself to my input's output list
+
+    // for CIRPrint
     void print_net_dfs(unsigned int& print_line_no) const;
     virtual void print_net(unsigned int& print_line_no) const = 0;
     virtual void printGate() const = 0;
+
+    // for CirGate
     void reportGate() const;
     void reportFanin(int level) const;
     void reportFanout(int level) const;
@@ -81,7 +89,6 @@ protected:
 private:
     unsigned int _variable_id;
     unsigned int _line_no;
-    bool floating;
     mutable unsigned int visited;
     static unsigned int visited_ref;
 };
@@ -125,7 +132,7 @@ public:
     string get_type_str() const { return "PO"; }
 
     void write_as_aag(ostream& outfile) const { outfile << _i_gate_list[0].get_gate_p()->get_variable_id() * 2 + (_i_gate_list[0].is_inverted() ? 1 : 0) << '\n'; }
-    unsigned int get_input_gate_id() const { return _i_gate_list[0].get_gate_p()->get_variable_id(); } // for CirMgr::write
+    unsigned int write_get_input_gate_id() const { return _i_gate_list[0].get_gate_p()->get_variable_id(); } // for CirMgr::write
     void print_net(unsigned int& print_line_no) const
     {
         cout << "[" << print_line_no << "] ";
@@ -205,8 +212,8 @@ private:
 class UNDEFGate: public CirGate
 {
 public:
-    UNDEFGate(): CirGate(0, 0, true) {} // true for floating
-    UNDEFGate(const unsigned int& vid): CirGate(vid, 0, true) {} // true for floating
+    UNDEFGate(): CirGate(0, 0) {} // true for floating
+    UNDEFGate(const unsigned int& vid): CirGate(vid, 0) {} // true for floating
 
     GateType get_type() const { return UNDEF_GATE; }
     string get_type_str() const { return "UNDEF"; }
