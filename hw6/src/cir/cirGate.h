@@ -23,26 +23,22 @@ public:
     {
         friend class CirGate;
     public:
-        RelatedGate(): gate_p(NULL), inverted(false) {}
-        RelatedGate(const CirGate* p, bool inverted = false): gate_p(const_cast<CirGate*>(p)), inverted(inverted) { }
+        RelatedGate(CirGate** p, bool inverted = false): gate_pp(p), inverted(inverted) {}
+        RelatedGate(): gate_pp(NULL), inverted(false) {}
 
-        CirGate* get_gate_p() const { return gate_p; }
+        CirGate* get_gate_p() const { return *gate_pp; }
         bool is_inverted() const { return inverted; }
         void set_inverted(bool new_inverted) { inverted = new_inverted; }
 
     private:
-        CirGate* gate_p;
+        CirGate** gate_pp;
         bool inverted;      // [TODO] store in LSB
     };
-    using RelatedGateList = vector<RelatedGate>;    // [TODO] change to map
+    using RelatedGateList = vector<RelatedGate>;
 
     CirGate() {}
     CirGate(const unsigned int& vid, const unsigned int& lno): _variable_id(vid), _line_no(lno), visited(0) {}
-    CirGate(const unsigned int& vid,
-            const unsigned int& lno,
-            const RelatedGateList& i_list,
-            const RelatedGateList& o_list): _i_gate_list(i_list), _o_gate_list(o_list), _variable_id(vid), _line_no(lno), visited(0) {}
-
+    CirGate(const unsigned int& vid, const unsigned int& lno, const RelatedGateList& src): _i_gate_list(src), _variable_id(vid), _line_no(lno), visited(0) {}
     virtual ~CirGate() {}
 
     string symbolic_name;
@@ -61,13 +57,10 @@ public:
     virtual string get_type_str() const = 0;
     unsigned int get_line_no() const { return _line_no; }
     unsigned int get_variable_id() const { return _variable_id; }
-    const RelatedGateList& get_i_list() const { return _i_gate_list; }
-    const RelatedGateList& get_o_list() const { return _o_gate_list; }
 
     // modify class member
-    void add_related_gate(const bool is_input, const RelatedGate& rgate);
-    void add_related_gate(const bool is_input, const bool inverted, CirGate* r_gate);
-    void replace_related_gate(const bool is_input, CirGate* ori_gate_p, CirGate* new_gate_p);
+    void add_output_gate(const RelatedGate& r_gate) { _o_gate_list.push_back(r_gate); }
+    void add_input_gate (const RelatedGate& r_gate) { _i_gate_list.push_back(r_gate); }
 
     // for CIRWrite
     void write_aig_dfs(IdList& _aig_list);
@@ -104,10 +97,6 @@ class PIGate: public CirGate
 {
 public:
     PIGate(const unsigned int& vid, const unsigned int& lno): CirGate(vid, lno) {}
-    PIGate(const unsigned int& vid,
-           const unsigned int& lno,
-           const RelatedGateList& i_list,
-           const RelatedGateList& o_list): CirGate(vid, lno, i_list, o_list) {}
 
     GateType get_type() const { return PI_GATE; }
     string get_type_str() const { return "PI"; }
@@ -140,11 +129,7 @@ private:
 class POGate: public CirGate
 {
 public:
-    POGate(const unsigned int& vid, const unsigned int& lno): CirGate(vid, lno) {}
-    POGate(const unsigned int& vid,
-           const unsigned int& lno,
-           const RelatedGateList& i_list,
-           const RelatedGateList& o_list): CirGate(vid, lno, i_list, o_list) {}
+    POGate(const unsigned int& vid, const unsigned int& lno, const RelatedGateList& src): CirGate(vid, lno, src) {}
 
     GateType get_type() const { return PO_GATE; }
     string get_type_str() const { return "PO"; }
@@ -190,11 +175,7 @@ private:
 class AIGGate: public CirGate
 {
 public:
-    AIGGate(const unsigned int& vid, const unsigned int& lno): CirGate(vid, lno) {}
-    AIGGate(const unsigned int& vid,
-            const unsigned int& lno,
-            const RelatedGateList& i_list,
-            const RelatedGateList& o_list): CirGate(vid, lno, i_list, o_list) {}
+    AIGGate(const unsigned int& vid, const unsigned int& lno, const RelatedGateList& src): CirGate(vid, lno, src) {}
 
     GateType get_type() const { return AIG_GATE; }
     string get_type_str() const { return "AIG"; }
@@ -240,16 +221,16 @@ private:
 class UNDEFGate: public CirGate
 {
 public:
-    UNDEFGate(const unsigned int& vid = 0, const unsigned int& lno = 0): CirGate(vid, lno) {}
-    UNDEFGate(const unsigned int& vid,
-              const unsigned int& lno,
-              const RelatedGateList& i_list,
-              const RelatedGateList& o_list): CirGate(vid, lno, i_list, o_list) {}
+    UNDEFGate(): CirGate(0, 0) {} // true for floating
+    UNDEFGate(const unsigned int& vid): CirGate(vid, 0) {} // true for floating
 
     GateType get_type() const { return UNDEF_GATE; }
     string get_type_str() const { return "UNDEF"; }
 
-    void print_net(unsigned int& print_line_no) const {}
+    void print_net(unsigned int& print_line_no) const
+    {
+        return;
+    }
 
     void printGate() const
     {
@@ -267,11 +248,7 @@ private:
 class CONSTGate: public CirGate
 {
 public:
-    CONSTGate(const unsigned int& vid = 0, const unsigned int& lno = 0): CirGate(vid, lno) {}
-    CONSTGate(const unsigned int& vid,
-              const unsigned int& lno,
-              const RelatedGateList& i_list,
-              const RelatedGateList& o_list): CirGate(vid, lno, i_list, o_list) {}
+    CONSTGate(): CirGate(0, 0) {}
 
     GateType get_type() const { return CONST_GATE; }
     string get_type_str() const { return "CONST"; }

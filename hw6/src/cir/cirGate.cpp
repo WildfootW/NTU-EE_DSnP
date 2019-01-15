@@ -111,6 +111,16 @@ void CirGate::write_aig_dfs(IdList& _aig_list)
     _aig_list.push_back(get_variable_id());
 }
 
+void
+CirGate::read_add_to_inputs_o_list(RelatedGate myself) const
+{
+    for(const RelatedGate& e:_i_gate_list)
+    {
+        myself.set_inverted(e.is_inverted());
+        e.get_gate_p()->add_output_gate(myself);
+    }
+}
+
 bool
 CirGate::is_floating() const
 {
@@ -120,34 +130,5 @@ CirGate::is_floating() const
             return true;
     }
     return false;
-}
-void CirGate::add_related_gate(const bool is_input, const RelatedGate& rgate)
-{
-    if(is_input)
-    {
-        rgate.get_gate_p()->_o_gate_list.push_back( RelatedGate(this, rgate.is_inverted()) );
-        _i_gate_list.push_back(rgate);
-    }
-    else
-    {
-        rgate.get_gate_p()->_i_gate_list.push_back( RelatedGate(this, rgate.is_inverted()) );
-        _o_gate_list.push_back(rgate);
-    }
-}
-void CirGate::add_related_gate(const bool is_input, const bool inverted, CirGate* r_gate) { add_related_gate(is_input, RelatedGate(r_gate, inverted)); }
-void CirGate::replace_related_gate(const bool is_input, CirGate* ori_gate_p, CirGate* new_gate_p)
-{
-    RelatedGateList& the_list = (is_input ? _i_gate_list : _o_gate_list);
-    for(auto it = the_list.begin(); it != the_list.end();++it)
-    {
-        if((*it).get_gate_p() == ori_gate_p)
-        {
-            bool inverted = (*it).is_inverted();
-            //the_list.erase(it);
-            //the_list.push_back(RelatedGate(new_gate_p, inverted));
-            (*it) = RelatedGate(new_gate_p, inverted);
-            break;
-        }
-    }
 }
 

@@ -53,6 +53,7 @@ private:
     unsigned int _header_O;
     unsigned int _header_A;
 
+    CirGate* _dummy_udf_gate;
     IdList _pi_list;
     IdList _po_list;
     //IdList _latch_list;
@@ -67,7 +68,6 @@ private:
     bool read_gate_parser(const string& input, vector<int>& tokens, GateType type) const;
     void read_set_header(const vector<int>& tokens);
     void read_set_gate(const vector<int>& tokens, GateType type, unsigned int lno);
-    void read_init_add_gate(GateType type, unsigned int lno, const vector<int>& tokens);
 
     // static function
     static inline unsigned int literal_to_variable(int literal_id, bool& inverted);
