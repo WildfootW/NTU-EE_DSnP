@@ -284,7 +284,7 @@ CirMgr::printSummary() const
     cout << "==================" << endl;
     cout << "  PI   " << setw(9) << right << _header_I << endl;
     cout << "  PO   " << setw(9) << right << _header_O << endl;
-    cout << "  AIG  " << setw(9) << right << _header_A << endl; // [TODO] fix
+    cout << "  AIG  " << setw(9) << right << _header_A << endl;
     cout << "------------------" << endl;
     cout << "  Total" << setw(9) << right << _header_I + _header_O + _header_A << endl;
 
