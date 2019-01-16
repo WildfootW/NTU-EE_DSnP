@@ -53,6 +53,15 @@ public:
     static void reset_visited() { ++visited_ref; }
     bool is_visited() const { return (visited == visited_ref); }
     void set_visited() const { visited = visited_ref; }
+    void get_dfs_list(IdList& list) const
+    {
+        if(get_type() == UNDEF_GATE || is_visited())
+            return;
+        set_visited();
+        list.push_back(get_variable_id());
+        for(auto &e:_i_gate_list)
+            e.get_gate_p()->get_dfs_list(list);
+    }
 
     // check status
     bool is_floating() const;
@@ -71,7 +80,8 @@ public:
     void add_related_gate(const bool is_input, const RelatedGate& rgate);
     void add_related_gate(const bool is_input, const bool inverted, CirGate* r_gate);
     void replace_self_in_related_gates(const CirGate* new_gate_p) const;
-    void replace_related_gate(const bool in_i_gate_list, const CirGate* ori_gate_p, const CirGate* new_gate_p);
+    void replace_self_in_related_gates(bool is_input, const RelatedGate& new_relation) const;
+    void replace_relation(const bool in_i_gate_list, const CirGate* ori_gate_p, const RelatedGate& new_relation);
 
     // for CIRWrite
     void write_aig_dfs(IdList& _aig_list);

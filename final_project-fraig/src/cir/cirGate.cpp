@@ -140,26 +140,47 @@ void CirGate::replace_self_in_related_gates(const CirGate* new_gate_p) const
     for(auto it = _i_gate_list.begin(); it != _i_gate_list.end();++it)
     {
         CirGate* r_gate = (*it).get_gate_p();
-        r_gate->replace_related_gate(false, this, new_gate_p);
+        RelatedGate new_relation(new_gate_p, (*it).is_inverted());
+        r_gate->replace_relation(false, this, new_relation);
     }
     for(auto it = _o_gate_list.begin(); it != _o_gate_list.end();++it)
     {
         CirGate* r_gate = (*it).get_gate_p();
-        r_gate->replace_related_gate(true, this, new_gate_p);
+        RelatedGate new_relation(new_gate_p, (*it).is_inverted());
+        r_gate->replace_relation(true , this, new_relation);
     }
 }
-void CirGate::replace_related_gate(const bool in_i_gate_list, const CirGate* ori_gate_p, const CirGate* new_gate_p)
+void CirGate::replace_self_in_related_gates(bool is_input, const RelatedGate& new_relation) const
+{
+    if(is_input)
+    {
+        for(auto it = _i_gate_list.begin(); it != _i_gate_list.end();++it)
+        {
+            CirGate* r_gate = (*it).get_gate_p();
+            r_gate->replace_relation(false, this, new_relation);
+        }
+    }
+    else
+    {
+        for(auto it = _o_gate_list.begin(); it != _o_gate_list.end();++it)
+        {
+            CirGate* r_gate = (*it).get_gate_p();
+            r_gate->replace_relation(true , this, new_relation);
+        }
+    }
+
+}
+void CirGate::replace_relation(const bool in_i_gate_list, const CirGate* ori_gate_p, const RelatedGate& new_relation)
 {
     RelatedGateList& the_list = (in_i_gate_list ? _i_gate_list : _o_gate_list);
     for(auto it = the_list.begin(); it != the_list.end();++it)
     {
         if((*it).get_gate_p() == ori_gate_p)
         {
-            bool inverted = (*it).is_inverted();
-            if(new_gate_p->get_type() == UNDEF_GATE)
+            if(new_relation.get_gate_p()->get_type() == UNDEF_GATE)
                 the_list.erase(it);
             else
-                (*it) = RelatedGate(new_gate_p, inverted);
+                (*it) = new_relation;
             break;
         }
     }
