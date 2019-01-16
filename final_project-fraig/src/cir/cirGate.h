@@ -70,7 +70,8 @@ public:
     // modify class member
     void add_related_gate(const bool is_input, const RelatedGate& rgate);
     void add_related_gate(const bool is_input, const bool inverted, CirGate* r_gate);
-    void replace_related_gate(const bool is_input, CirGate* ori_gate_p, CirGate* new_gate_p);
+    void replace_self_in_related_gates(const CirGate* new_gate_p) const;
+    void replace_related_gate(const bool in_i_gate_list, const CirGate* ori_gate_p, const CirGate* new_gate_p);
 
     // for CIRWrite
     void write_aig_dfs(IdList& _aig_list);
@@ -201,6 +202,8 @@ public:
 
     GateType get_type() const { return AIG_GATE; }
     string get_type_str() const { return "AIG"; }
+
+    bool isAig() const { return true; }
 
     void write_as_aag(ostream& outfile) const { outfile << get_variable_id() * 2 << ' '
                                                         << _i_gate_list[0].get_gate_p()->get_variable_id() * 2 + (_i_gate_list[0].is_inverted() ? 1 : 0) << ' '

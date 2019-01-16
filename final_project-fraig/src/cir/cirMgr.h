@@ -73,13 +73,10 @@ private:
     IdList _pi_list;
     IdList _po_list;
     //IdList _latch_list;
-    IdList _floating_list;
-    IdList _not_used_list;
 
     ofstream* _simLog;
 
     // Help function for readCircuit()
-    bool read_confirm_circuit(); // find floating, complete o_gate_list...
     bool read_symbol_parser(string input, CirGate*& target, string& symbolic_name) const;
     bool read_interger_parser(string input, vector<int>& tokens, unsigned int number_num) const;
     bool read_header_parser(const string& input, vector<int>& tokens) const;

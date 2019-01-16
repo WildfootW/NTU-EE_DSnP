@@ -135,17 +135,31 @@ void CirGate::add_related_gate(const bool is_input, const RelatedGate& rgate)
     }
 }
 void CirGate::add_related_gate(const bool is_input, const bool inverted, CirGate* r_gate) { add_related_gate(is_input, RelatedGate(r_gate, inverted)); }
-void CirGate::replace_related_gate(const bool is_input, CirGate* ori_gate_p, CirGate* new_gate_p)
+void CirGate::replace_self_in_related_gates(const CirGate* new_gate_p) const
 {
-    RelatedGateList& the_list = (is_input ? _i_gate_list : _o_gate_list);
+    for(auto it = _i_gate_list.begin(); it != _i_gate_list.end();++it)
+    {
+        CirGate* r_gate = (*it).get_gate_p();
+        r_gate->replace_related_gate(false, this, new_gate_p);
+    }
+    for(auto it = _o_gate_list.begin(); it != _o_gate_list.end();++it)
+    {
+        CirGate* r_gate = (*it).get_gate_p();
+        r_gate->replace_related_gate(true, this, new_gate_p);
+    }
+}
+void CirGate::replace_related_gate(const bool in_i_gate_list, const CirGate* ori_gate_p, const CirGate* new_gate_p)
+{
+    RelatedGateList& the_list = (in_i_gate_list ? _i_gate_list : _o_gate_list);
     for(auto it = the_list.begin(); it != the_list.end();++it)
     {
         if((*it).get_gate_p() == ori_gate_p)
         {
             bool inverted = (*it).is_inverted();
-            //the_list.erase(it);
-            //the_list.push_back(RelatedGate(new_gate_p, inverted));
-            (*it) = RelatedGate(new_gate_p, inverted);
+            if(new_gate_p->get_type() == UNDEF_GATE)
+                the_list.erase(it);
+            else
+                (*it) = RelatedGate(new_gate_p, inverted);
             break;
         }
     }

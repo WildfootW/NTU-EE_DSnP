@@ -33,6 +33,24 @@ using namespace std;
 void
 CirMgr::sweep()
 {
+    bool complete = false;
+    while(!complete)
+    {
+        complete = true;
+        for(unsigned int i = 0;i < _gate_list.size();++i)
+        {
+            if(_gate_list[i]->is_not_using() && _gate_list[i]->get_type() == AIG_GATE)
+            {
+                cout << "Sweeping: AIG(" << i << ") removed...\n";
+                complete = false;
+                CirGate** ori_gate = &_gate_list[i];
+                CirGate*  new_gate = new UNDEFGate(i);
+                (*ori_gate)->replace_self_in_related_gates(new_gate);
+                delete (*ori_gate);
+                (*ori_gate) = new_gate;
+            }
+        }
+    }
 }
 
 // Recursively simplifying from POs;

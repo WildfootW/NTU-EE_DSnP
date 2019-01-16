@@ -261,7 +261,6 @@ CirMgr::readCircuit(const string& fileName)
     }
 
     aag_file.close();
-    read_confirm_circuit();
     return true;
 }
 
@@ -285,7 +284,7 @@ CirMgr::printSummary() const
     cout << "==================" << endl;
     cout << "  PI   " << setw(9) << right << _header_I << endl;
     cout << "  PO   " << setw(9) << right << _header_O << endl;
-    cout << "  AIG  " << setw(9) << right << _header_A << endl;
+    cout << "  AIG  " << setw(9) << right << _header_A << endl; // [TODO] fix
     cout << "------------------" << endl;
     cout << "  Total" << setw(9) << right << _header_I + _header_O + _header_A << endl;
 
@@ -333,15 +332,32 @@ CirMgr::printPOs() const
 void
 CirMgr::printFloatGates() const
 {
-    cout << "Gates with floating fanin(s):";
-    for(auto& e:_floating_list)
-        cout << " " << e;
-    cout << endl;
-
-    cout << "Gates defined but not used  :";
-    for(auto& e:_not_used_list)
-        cout << " " << e;
-    cout << endl;
+    vector<int> list;
+    for(unsigned int i = 0;i < _gate_list.size();++i)
+    {
+        if(_gate_list[i]->is_floating())
+            list.push_back(i);
+    }
+    if(!list.empty())
+    {
+        cout << "Gates with floating fanin(s):";
+        for(auto& e:list)
+            cout << " " << e;
+        cout << endl;
+    }
+    list.clear();
+    for(unsigned int i = 0;i < _gate_list.size();++i)
+    {
+        if(_gate_list[i]->is_not_using())
+            list.push_back(i);
+    }
+    if(!list.empty())
+    {
+        cout << "Gates defined but not used  :";
+        for(auto& e:list)
+            cout << " " << e;
+        cout << endl;
+    }
 }
 
 void
@@ -397,22 +413,6 @@ CirMgr::writeAag(ostream& outfile) const
 }
 
 // Help function for read
-bool CirMgr::read_confirm_circuit()
-{
-    // read_complete_floating_list(); // for that have direct float input
-    for(unsigned int i = 0;i < _gate_list.size();++i)
-    {
-        if(_gate_list[i]->is_floating())
-            _floating_list.push_back(i);
-    }
-    // read complete not used list
-    for(unsigned int i = 0;i < _gate_list.size();++i)
-    {
-        if(_gate_list[i]->is_not_using())
-            _not_used_list.push_back(i);
-    }
-    return true;
-}
 bool CirMgr::read_symbol_parser(string input, CirGate*& target, string& symbolic_name) const
 {
     stringstream ss(input);
@@ -562,16 +562,7 @@ void CirMgr::read_init_add_gate(GateType type, unsigned int lno, const vector<in
         new_gate->add_related_gate(true, src_inverted, _gate_list[src_gate_id]);
     }
 
-    for(auto it = (*ori_gate)->get_i_list().begin(); it != (*ori_gate)->get_i_list().end();++it)
-    {
-        CirGate* r_gate = (*it).get_gate_p();
-        r_gate->replace_related_gate(false, (*ori_gate), new_gate);
-    }
-    for(auto it = (*ori_gate)->get_o_list().begin(); it != (*ori_gate)->get_o_list().end();++it)
-    {
-        CirGate* r_gate = (*it).get_gate_p();
-        r_gate->replace_related_gate(true, (*ori_gate), new_gate);
-    }
+    (*ori_gate)->replace_self_in_related_gates(new_gate);
     delete (*ori_gate);
     (*ori_gate) = new_gate;
 }
