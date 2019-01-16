@@ -47,10 +47,12 @@ CirGate::reportGate() const
 
     unsigned int times = ss.str().size() + 4;
     //times = max(times, (unsigned int)50);
-    times = 50;
+    times = 80;
 
     cout << string(times, '=') << endl;
-    cout << "= "  << left << setw(times - 4) << ss.str() << " =" << endl;
+    cout << "= "  << left << setw(times - 4) << ss.str() << endl;
+    cout << "= FECs:" << endl;
+    cout << "= Value: 00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000" << endl;
     cout << string(times, '=') << endl;
 }
 
