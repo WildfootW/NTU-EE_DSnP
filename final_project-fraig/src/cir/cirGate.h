@@ -25,16 +25,15 @@ public:
     {
         friend class CirGate;
     public:
-        RelatedGate(): gate_p(NULL), inverted(false) {}
-        RelatedGate(const CirGate* p, bool inverted = false): gate_p(const_cast<CirGate*>(p)), inverted(inverted) { }
+        RelatedGate(const CirGate* p = NULL, bool inverted = false): value(0) { set_pointer(const_cast<CirGate*>(p)); set_inverted(inverted); }
 
-        CirGate* get_gate_p() const { return gate_p; }
-        bool is_inverted() const { return inverted; }
-        void set_inverted(bool new_inverted) { inverted = new_inverted; }
+        CirGate* get_gate_p() const { size_t ret = 0x7; ret = ~ret; ret &= value; return (CirGate*)ret; }
+        bool is_inverted() const { return (value % 2); }
+        void set_inverted(bool new_inverted) { if(new_inverted) value |= 0x1; else value &= ~(0x1); }
+        void set_pointer(CirGate* new_p) { value &= 0x1; value |= (size_t)new_p; }
 
     private:
-        CirGate* gate_p;
-        bool inverted;      // [TODO] store in LSB
+        size_t value;
     };
     using RelatedGateList = vector<RelatedGate>;    // [TODO] change to map
 
