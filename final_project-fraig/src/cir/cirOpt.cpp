@@ -96,7 +96,7 @@ CirMgr::optimize()
             else if(ia.get_gate_p()->get_type() == CONST_GATE)
             {
                 if(ia.is_inverted()) // type a
-                    new_relation = CirGate::RelatedGate(ib.get_gate_p(), false);
+                    new_relation = CirGate::RelatedGate(ib.get_gate_p(), ib.is_inverted());
                 else // type b
                     new_relation = CirGate::RelatedGate(_gate_list[0], false); // constant false
             }
@@ -104,9 +104,14 @@ CirMgr::optimize()
             {
                 continue;
             }
+
+            //cout << ia << " " << ib << " " << new_relation << endl;
             (*ori_gate)->replace_self_in_related_gates(false, new_relation);
+            new_relation.get_gate_p()->append_related_gate_list(false, (*ori_gate)->get_o_list());
+            CirGate* new_udf_gate = new UNDEFGate(e);
+            (*ori_gate)->replace_self_in_related_gates(new_udf_gate);
             delete (*ori_gate);
-            (*ori_gate) = new UNDEFGate(e);
+            (*ori_gate) = new_udf_gate;
             cout << "Simplifying: " << new_relation.get_gate_p()->get_variable_id() << " merging ";
             if(new_relation.is_inverted())
                 cout << "!";

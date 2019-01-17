@@ -123,7 +123,14 @@ CirGate::is_floating() const
     }
     return false;
 }
-void CirGate::add_related_gate(const bool is_input, const RelatedGate& rgate)
+void CirGate::append_related_gate_list(const bool is_input, const RelatedGateList& rgate_list) // one way
+{
+    if(is_input)
+        _i_gate_list.insert(_i_gate_list.begin(), rgate_list.begin(), rgate_list.end());
+    else
+        _o_gate_list.insert(_o_gate_list.begin(), rgate_list.begin(), rgate_list.end());
+}
+void CirGate::add_related_gate(const bool is_input, const RelatedGate& rgate) // double side
 {
     if(is_input)
     {
@@ -158,19 +165,24 @@ void CirGate::replace_self_in_related_gates(bool is_input, const RelatedGate& ne
     {
         for(auto it = _i_gate_list.begin(); it != _i_gate_list.end();++it)
         {
+            RelatedGate new_relation_for_this_relatedgate = new_relation;
+            if((*it).is_inverted()) // if origin relationship is inverted, reverse it
+                new_relation_for_this_relatedgate.set_inverted_reverse();
             CirGate* r_gate = (*it).get_gate_p();
-            r_gate->replace_relation(false, this, new_relation);
+            r_gate->replace_relation(false, this, new_relation_for_this_relatedgate);
         }
     }
     else
     {
         for(auto it = _o_gate_list.begin(); it != _o_gate_list.end();++it)
         {
+            RelatedGate new_relation_for_this_relatedgate = new_relation;
+            if((*it).is_inverted()) // if origin relationship is inverted, reverse it
+                new_relation_for_this_relatedgate.set_inverted_reverse();
             CirGate* r_gate = (*it).get_gate_p();
-            r_gate->replace_relation(true , this, new_relation);
+            r_gate->replace_relation(true , this, new_relation_for_this_relatedgate);
         }
     }
-
 }
 void CirGate::replace_relation(const bool in_i_gate_list, const CirGate* ori_gate_p, const RelatedGate& new_relation)
 {
@@ -186,5 +198,14 @@ void CirGate::replace_relation(const bool in_i_gate_list, const CirGate* ori_gat
             break;
         }
     }
+}
+
+ostream& operator << (ostream& os, const CirGate::RelatedGate& rgate)
+{
+    if(rgate.is_inverted())
+        os << "!";
+    os << rgate.get_gate_p()->get_type_str();
+    os << "(" << rgate.get_gate_p()->get_variable_id() << ")";
+    return os;
 }
 

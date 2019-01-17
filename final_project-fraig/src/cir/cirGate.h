@@ -24,12 +24,14 @@ public:
     class RelatedGate
     {
         friend class CirGate;
+        friend ostream& operator << (ostream& os, const CirGate::RelatedGate& rgate);
     public:
         RelatedGate(const CirGate* p = NULL, bool inverted = false): value(0) { set_pointer(const_cast<CirGate*>(p)); set_inverted(inverted); }
 
         CirGate* get_gate_p() const { size_t ret = 0x7; ret = ~ret; ret &= value; return (CirGate*)ret; }
         bool is_inverted() const { return (value % 2); }
         void set_inverted(bool new_inverted) { if(new_inverted) value |= 0x1; else value &= ~(0x1); }
+        void set_inverted_reverse() { set_inverted(!is_inverted()); }
         void set_pointer(CirGate* new_p) { value &= 0x1; value |= (size_t)new_p; }
 
     private:
@@ -57,9 +59,9 @@ public:
         if(get_type() == UNDEF_GATE || is_visited())
             return;
         set_visited();
-        list.push_back(get_variable_id());
         for(auto &e:_i_gate_list)
             e.get_gate_p()->get_dfs_list(list);
+        list.push_back(get_variable_id());
     }
 
     // check status
@@ -76,8 +78,9 @@ public:
     const RelatedGateList& get_o_list() const { return _o_gate_list; }
 
     // modify class member
-    void add_related_gate(const bool is_input, const RelatedGate& rgate);
+    void add_related_gate(const bool is_input, const RelatedGate& rgate); // two ways
     void add_related_gate(const bool is_input, const bool inverted, CirGate* r_gate);
+    void append_related_gate_list(const bool is_input, const RelatedGateList& rgate_list); // one way
     void replace_self_in_related_gates(const CirGate* new_gate_p) const;
     void replace_self_in_related_gates(bool is_input, const RelatedGate& new_relation) const;
     void replace_relation(const bool in_i_gate_list, const CirGate* ori_gate_p, const RelatedGate& new_relation);

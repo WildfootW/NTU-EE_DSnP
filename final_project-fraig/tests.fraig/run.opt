@@ -25,4 +25,6 @@ echo "cirp -po" >> $dofile
 echo "cirp -n" >> $dofile
 echo "cirp -fl" >> $dofile
 echo "q -f" >> $dofile
-../fraig -f $dofile
+../fraig -f $dofile >> out
+../ref/fraig -f $dofile >> out-ref
+
