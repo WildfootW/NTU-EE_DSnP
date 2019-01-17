@@ -107,7 +107,7 @@ CirMgr::optimize()
 
             //cout << ia << " " << ib << " " << new_relation << endl;
             (*ori_gate)->replace_self_in_related_gates(false, new_relation);
-            new_relation.get_gate_p()->append_related_gate_list(false, (*ori_gate)->get_o_list());
+            new_relation.get_gate_p()->append_related_gate_list(false, (*ori_gate)->get_o_list(), new_relation.is_inverted());
             CirGate* new_udf_gate = new UNDEFGate(e);
             (*ori_gate)->replace_self_in_related_gates(new_udf_gate);
             delete (*ori_gate);

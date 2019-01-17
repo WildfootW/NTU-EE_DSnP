@@ -123,12 +123,15 @@ CirGate::is_floating() const
     }
     return false;
 }
-void CirGate::append_related_gate_list(const bool is_input, const RelatedGateList& rgate_list) // one way
+void CirGate::append_related_gate_list(const bool is_input, const RelatedGateList& rgate_list, bool reverse) // one way
 {
-    if(is_input)
-        _i_gate_list.insert(_i_gate_list.begin(), rgate_list.begin(), rgate_list.end());
-    else
-        _o_gate_list.insert(_o_gate_list.begin(), rgate_list.begin(), rgate_list.end());
+    RelatedGateList& the_list = (is_input ? _i_gate_list : _o_gate_list);
+    for(auto rgate:rgate_list)
+    {
+        if(reverse)
+            rgate.set_inverted_reverse();
+        the_list.push_back(rgate);
+    }
 }
 void CirGate::add_related_gate(const bool is_input, const RelatedGate& rgate) // double side
 {

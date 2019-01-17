@@ -80,7 +80,7 @@ public:
     // modify class member
     void add_related_gate(const bool is_input, const RelatedGate& rgate); // two ways
     void add_related_gate(const bool is_input, const bool inverted, CirGate* r_gate);
-    void append_related_gate_list(const bool is_input, const RelatedGateList& rgate_list); // one way
+    void append_related_gate_list(const bool is_input, const RelatedGateList& rgate_list, bool reverse); // one way
     void replace_self_in_related_gates(const CirGate* new_gate_p) const;
     void replace_self_in_related_gates(bool is_input, const RelatedGate& new_relation) const;
     void replace_relation(const bool in_i_gate_list, const CirGate* ori_gate_p, const RelatedGate& new_relation);
