@@ -96,7 +96,28 @@ public:
     // for CIRPrint
     void print_net_dfs(unsigned int& print_line_no) const;
     virtual void print_net(unsigned int& print_line_no) const = 0;
-    virtual void printGate() const = 0;
+    virtual void printGate() const
+    {
+#ifdef DEBUG
+        int times = 80;
+        cout << get_type_str() << "(" << get_variable_id() << ")" << endl;
+        cout << " Input list:";
+        for(auto &e:_i_gate_list)
+            cout << " " << e;
+        cout << endl;
+        cout << "Output list:";
+        for(auto &e:_o_gate_list)
+            cout << " " << e;
+        cout << endl;
+        if(!symbolic_name.empty())
+            cout << "symbol: " << symbolic_name << endl;
+        if(is_floating())
+            cout << "is floating" << endl;
+        if(is_not_using())
+            cout << "is not using" << endl;
+        cout << string(times, '=') << endl;
+#endif
+    }
 
     // for CirGate
     void reportGate() const;
@@ -139,17 +160,6 @@ public:
         cout << endl;
         ++print_line_no;
     }
-    void printGate() const
-    {
-#ifdef DEBUG
-        cout << get_type_str() << " " << get_variable_id();
-        if(!symbolic_name.empty())
-            cout << " " << symbolic_name;
-        cout << " related o: " << _o_gate_list.size();
-        cout << " f: " << is_floating();
-        cout << endl;
-#endif
-    }
 private:
 };
 
@@ -187,18 +197,6 @@ public:
             cout << " (" << symbolic_name << ")";
         cout << endl;
         ++print_line_no;
-    }
-    void printGate() const
-    {
-#ifdef DEBUG
-        cout << get_type_str() << " " << get_variable_id();
-        cout << " " << _i_gate_list[0].get_gate_p()->get_variable_id();
-        if(!symbolic_name.empty())
-            cout << " " << symbolic_name;
-        cout << " related o: " << _o_gate_list.size();
-        cout << " f: " << is_floating();
-        cout << endl;
-#endif
     }
 private:
 };
@@ -241,17 +239,6 @@ public:
         cout << endl;
         ++print_line_no;
     }
-    void printGate() const
-    {
-#ifdef DEBUG
-        cout << get_type_str() << " " << get_variable_id();
-        cout << " " << _i_gate_list[0].get_gate_p()->get_variable_id();
-        cout << " " << _i_gate_list[1].get_gate_p()->get_variable_id();
-        cout << " related o: " << _o_gate_list.size();
-        cout << " f: " << is_floating();
-        cout << endl;
-#endif
-    }
 private:
 };
 
@@ -268,16 +255,6 @@ public:
     string get_type_str() const { return "UNDEF"; }
 
     void print_net(unsigned int& print_line_no) const {}
-
-    void printGate() const
-    {
-#ifdef DEBUG
-        cout << get_type_str();
-        cout << " related o: " << _o_gate_list.size();
-        cout << " f: " << is_floating();
-        cout << endl;
-#endif
-    }
 
 private:
 };
@@ -301,15 +278,6 @@ public:
         cout << get_variable_id();
         cout << endl;
         ++print_line_no;
-    }
-    void printGate() const
-    {
-#ifdef DEBUG
-        cout << get_type_str();
-        cout << " related o: " << _o_gate_list.size();
-        cout << " f: " << is_floating();
-        cout << endl;
-#endif
     }
 private:
 };

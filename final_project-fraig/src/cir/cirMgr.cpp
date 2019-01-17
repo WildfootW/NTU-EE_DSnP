@@ -291,7 +291,6 @@ CirMgr::printSummary() const
 #ifdef DEBUG
    for(size_t i = 0;i < _gate_list.size();++i)
    {
-       cout << i << ": ";
        _gate_list[i]->printGate();
    }
    cout << "Comments: " << endl;
